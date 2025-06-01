@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cube Unfolding Puzzle</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>Cube Unfolding Puzzle</h1>
+    <div id="instructions">
+      Select the correct cube net that folds into the shown cube.
+    </div>
+  </header>
+  <main class="game-layout">
+    <section class="cube-display">
+      <h2>Target Cube</h2>
+      <div id="cube-visual">
+        <!-- 3D/2D cube visualization goes here -->
+      </div>
+    </section>
+    <section class="net-options">
+      <h2>Choose the Net</h2>
+      <div id="net-options-list">
+        <!-- Unfolded net options will be rendered here -->
+      </div>
+    </section>
+  </main>
+  <footer>
+    <div id="controls">
+      <button id="submit-btn">Submit</button>
+      <button id="next-btn" style="display:none;">Next</button>
+    </div>
+    <div id="feedback"></div>
+  </footer>
+  <script src="script.js"></script>
+</body>
+</html>
