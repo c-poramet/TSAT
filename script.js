@@ -48,15 +48,16 @@ function renderCubeSVG(cube) {
   const faces = cube.faces;
   const [fx, fy, fz] = getVisibleFaces();
   const svg = `
-    <svg width="120" height="120" viewBox="0 0 120 120">
-      <polygon points="60,20 100,40 60,60 20,40" fill="#b5ead7" stroke="#888" stroke-width="2"/>
-      <text x="60" y="42" text-anchor="middle" font-size="20" fill="#23272e" font-family="Kanit">${faces[fz]}</text>
-      <polygon points="20,40 60,60 60,100 20,80" fill="#c7ceea" stroke="#888" stroke-width="2"/>
-      <text x="35" y="75" text-anchor="middle" font-size="20" fill="#23272e" font-family="Kanit">${faces[fx]}</text>
-      <polygon points="60,60 100,40 100,80 60,100" fill="#f7b7a3" stroke="#888" stroke-width="2"/>
-      <text x="85" y="75" text-anchor="middle" font-size="20" fill="#23272e" font-family="Kanit">${faces[fy]}</text>
-    </svg>
-    <div style="font-size:0.9em;color:#b0b0b0;margin-top:0.5em;">(showing faces +Z, +X, +Y)</div>
+    <div class="cube-container">
+      <svg width="180" height="180" viewBox="0 0 120 120">
+        <polygon points="60,20 100,40 60,60 20,40" fill="#b5ead7" stroke="#888" stroke-width="2"/>
+        <text x="60" y="42" text-anchor="middle" font-size="20" fill="#23272e" font-family="Kanit">${faces[fz]}</text>
+        <polygon points="20,40 60,60 60,100 20,80" fill="#c7ceea" stroke="#888" stroke-width="2"/>
+        <text x="35" y="75" text-anchor="middle" font-size="20" fill="#23272e" font-family="Kanit">${faces[fx]}</text>
+        <polygon points="60,60 100,40 100,80 60,100" fill="#f7b7a3" stroke="#888" stroke-width="2"/>
+        <text x="85" y="75" text-anchor="middle" font-size="20" fill="#23272e" font-family="Kanit">${faces[fy]}</text>
+      </svg>
+    </div>
   `;
   document.getElementById('cube-visual').innerHTML = svg;
 }
@@ -136,17 +137,14 @@ function renderPuzzle() {
   // 3. Pick a random net for the correct answer
   const correctNetIdx = randomInt(0, cubeNets.length-1);
   const correctNet = cubeNets[correctNetIdx];
-  
   // 4. Create the faces for the correct net
   // We'll map in a way that visible faces (first three) match the cube
   const visibleFaceIndices = getVisibleFaces(); // [0, 2, 4]
   const correctFaces = Array(6).fill(0);
-  
   // Map visible faces to first three net positions
   correctFaces[0] = cube.faces[visibleFaceIndices[0]];
   correctFaces[1] = cube.faces[visibleFaceIndices[1]];
   correctFaces[2] = cube.faces[visibleFaceIndices[2]];
-  
   // Fill remaining face positions with hidden faces
   let hiddenFaceIdx = 0;
   for (let i = 3; i < 6; i++) {
@@ -156,54 +154,19 @@ function renderPuzzle() {
     correctFaces[i] = cube.faces[hiddenFaceIdx];
     hiddenFaceIdx++;
   }
-  
-  // 5. Create three incorrect options
-  // Each one will be a different valid net but with the same face values
-  // OR same net shape but with swapped face values
+  // 5. Create three incorrect options using the same net shape but shuffled face values
   const options = [
     { net: correctNet, faces: correctFaces.slice(), correct: true }
   ];
-  
-  // Track used net indices to avoid duplicates
-  const usedNetIndices = [correctNetIdx];
-  
-  while (options.length < 4) {
-    // Decide whether to use a different net shape or swap face values
-    const useDifferentNet = Math.random() > 0.5 || usedNetIndices.length >= cubeNets.length;
-    
-    if (useDifferentNet) {
-      // Use the same net, but swap two face values to make it incorrect
-      const faces = correctFaces.slice();
-      const i = randomInt(0, faces.length - 1);
-      let j;
-      do {
-        j = randomInt(0, faces.length - 1);
-      } while (j === i);
-      [faces[i], faces[j]] = [faces[j], faces[i]];
-      
-      options.push({
-        net: correctNet,
-        faces: faces,
-        correct: false
-      });
-    } else {
-      // Use a different net shape (still valid, but not the same as correct one)
-      let newNetIdx;
-      do {
-        newNetIdx = randomInt(0, cubeNets.length - 1);
-      } while (usedNetIndices.includes(newNetIdx));
-      
-      usedNetIndices.push(newNetIdx);
-      options.push({
-        net: cubeNets[newNetIdx],
-        faces: correctFaces.slice(), // Same face values, different arrangement
-        correct: false
-      });
-    }
+  for (let i = 0; i < 3; i++) {
+    let faces = correctFaces.slice();
+    // Shuffle until not equal to correctFaces
+    do {
+      shuffle(faces);
+    } while (faces.join(',') === correctFaces.join(','));
+    options.push({ net: correctNet, faces: faces.slice(), correct: false });
   }
-  
   shuffle(options);
-  
   const netOptionsList = document.getElementById('net-options-list');
   netOptionsList.innerHTML = options.map((opt, idx) => renderNetSVG(opt.net, opt.faces, idx)).join('');
   // Option selection

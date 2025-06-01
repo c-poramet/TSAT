@@ -55,12 +55,23 @@ h1 {
   padding: 1.5rem 1rem;
   min-width: 280px;
   box-shadow: 0 2px 12px #0002;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: 100%;
 }
 
 .cube-display h2, .net-options h2 {
   color: var(--pastel3);
   font-size: 1.2rem;
   margin-top: 0;
+}
+
+.cube-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
 }
 
 #cube-visual {
@@ -124,6 +135,14 @@ button:hover, button:focus {
   margin-top: 0.5rem;
 }
 
+/* Make .cube-display as tall as .net-options */
+.game-layout {
+  align-items: stretch;
+}
+.cube-display, .net-options {
+  height: 100%;
+}
+
 @media (max-width: 800px) {
   .game-layout {
     flex-direction: column;
@@ -137,5 +156,10 @@ button:hover, button:focus {
   }
   #net-options-list {
     grid-template-columns: 1fr;
+  }
+}
+@media (min-width: 800px) {
+  .cube-display, .net-options {
+    min-height: 420px;
   }
 }
