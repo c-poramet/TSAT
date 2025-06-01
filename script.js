@@ -1,22 +1,32 @@
 // --- Cube Data Structure and Net Generation ---
-
 // Cube face indices: 0=+X, 1=-X, 2=+Y, 3=-Y, 4=+Z, 5=-Z
-// We'll use this order for all cube operations
 const FACE_LABELS = ['+X', '-X', '+Y', '-Y', '+Z', '-Z'];
 
-// 11 valid cube nets (as before)
+// 11 valid cube nets, each with a canonical face mapping (see image)
+// Each net: { layout: [ [x,y], ... ], faceMap: [cubeFaceIdx for each net cell] }
 const cubeNets = [
-  [[1,0],[0,1],[1,1],[2,1],[3,1],[1,2]],
-  [[0,0],[1,0],[2,0],[1,1],[1,2],[1,3]],
-  [[0,1],[1,1],[2,1],[3,1],[2,0],[2,2]],
-  [[0,1],[1,1],[2,1],[2,0],[2,2],[3,1]],
-  [[1,0],[0,1],[1,1],[2,1],[1,2],[0,2]],
-  [[0,0],[1,0],[2,0],[2,1],[2,2],[3,2]],
-  [[0,1],[1,1],[2,1],[1,0],[1,2],[2,2]],
-  [[1,0],[0,1],[1,1],[2,1],[2,2],[3,2]],
-  [[0,1],[1,1],[2,1],[2,0],[3,0],[2,2]],
-  [[1,0],[0,1],[1,1],[2,1],[2,2],[3,1]],
-  [[0,1],[1,1],[2,1],[1,0],[2,0],[2,2]]
+  // Net 1 (T)
+  { layout: [[1,0],[0,1],[1,1],[2,1],[3,1],[1,2]], faceMap: [4,0,2,1,5,3] },
+  // Net 2
+  { layout: [[0,0],[1,0],[2,0],[1,1],[1,2],[1,3]], faceMap: [0,2,4,1,3,5] },
+  // Net 3
+  { layout: [[0,1],[1,1],[2,1],[3,1],[2,0],[2,2]], faceMap: [1,2,4,0,5,3] },
+  // Net 4
+  { layout: [[0,1],[1,1],[2,1],[2,0],[2,2],[3,1]], faceMap: [1,2,4,5,0,3] },
+  // Net 5
+  { layout: [[1,0],[0,1],[1,1],[2,1],[1,2],[0,2]], faceMap: [4,1,2,0,3,5] },
+  // Net 6
+  { layout: [[0,0],[1,0],[2,0],[2,1],[2,2],[3,2]], faceMap: [0,2,4,1,3,5] },
+  // Net 7
+  { layout: [[0,1],[1,1],[2,1],[1,0],[1,2],[2,2]], faceMap: [1,2,4,0,3,5] },
+  // Net 8
+  { layout: [[1,0],[0,1],[1,1],[2,1],[2,2],[3,2]], faceMap: [4,1,2,0,3,5] },
+  // Net 9
+  { layout: [[0,1],[1,1],[2,1],[2,0],[3,0],[2,2]], faceMap: [1,2,4,5,0,3] },
+  // Net 10
+  { layout: [[1,0],[0,1],[1,1],[2,1],[2,2],[3,1]], faceMap: [4,1,2,0,3,5] },
+  // Net 11
+  { layout: [[0,1],[1,1],[2,1],[1,0],[2,0],[2,2]], faceMap: [1,2,4,0,5,3] }
 ];
 
 function randomInt(min, max) {
@@ -30,20 +40,17 @@ function shuffle(arr) {
   }
 }
 
-// Generate a cube with random numbers on each face
 function generateCube() {
   // Faces: [0=+X, 1=-X, 2=+Y, 3=-Y, 4=+Z, 5=-Z]
   const faces = Array.from({length: 6}, () => randomInt(1, 100));
   return { faces };
 }
 
-// For a given cube orientation, return the 3 visible faces in a standard isometric view
 function getVisibleFaces() {
   // We'll use the +X, +Y, +Z faces as visible (indices 0, 2, 4)
   return [0, 2, 4];
 }
 
-// Render the cube as SVG, showing the 3 visible faces
 function renderCubeSVG(cube) {
   const faces = cube.faces;
   const [fx, fy, fz] = getVisibleFaces();
@@ -62,71 +69,26 @@ function renderCubeSVG(cube) {
   document.getElementById('cube-visual').innerHTML = svg;
 }
 
-// Map cube faces to net faces (for a given net, pick a random mapping)
-function mapCubeToNet(cube, netIdx) {
-  // For simplicity, assign cube faces to net faces in a random order
-  const mapping = [0,1,2,3,4,5];
-  shuffle(mapping);
-  return mapping.map(i => cube.faces[i]);
-}
-
-// Render a net as SVG
 function renderNetSVG(net, faces, optionIdx) {
-  const xs = net.map(([x]) => x);
-  const ys = net.map(([,y]) => y);
+  const xs = net.layout.map(([x]) => x);
+  const ys = net.layout.map(([,y]) => y);
   const minX = Math.min(...xs);
   const minY = Math.min(...ys);
   const maxX = Math.max(...xs);
   const maxY = Math.max(...ys);
   const cellSize = 32;
-  // Calculate SVG size to fit the entire net
   const width = (maxX-minX+1)*cellSize;
   const height = (maxY-minY+1)*cellSize;
   let svg = `<svg width="${width}" height="${height}">`;
-  
-  // Draw the net outline to help visualize connectivity
   let outline = '';
-  net.forEach(([x, y], i) => {
+  net.layout.forEach(([x, y], i) => {
     const fx = (x-minX)*cellSize;
     const fy = (y-minY)*cellSize;
-    outline += `<rect x="${fx}" y="${fy}" width="${cellSize}" height="${cellSize}" rx="6" 
-                 fill="#2c313a" stroke="#b5ead7" stroke-width="2"/>
-                <text x="${fx+cellSize/2}" y="${fy+cellSize/2+7}" 
-                 text-anchor="middle" font-size="18" fill="#f7b7a3" font-family="Kanit">${faces[i]}</text>`;
+    outline += `<rect x="${fx}" y="${fy}" width="${cellSize}" height="${cellSize}" rx="6" fill="#2c313a" stroke="#b5ead7" stroke-width="2"/>
+                <text x="${fx+cellSize/2}" y="${fy+cellSize/2+7}" text-anchor="middle" font-size="18" fill="#f7b7a3" font-family="Kanit">${faces[i]}</text>`;
   });
   svg += outline;
   return `<div class="net-option" data-option="${optionIdx}">${svg}</div>`;
-}
-
-// Generate false nets by swapping one visible face with a hidden face
-function generateFalseNets(correctFaces, net, visibleNetIndices) {
-  const falseNets = [];
-  for (let i = 0; i < 3; i++) {
-    // Copy correct faces
-    let faces = correctFaces.slice();
-    // Pick a visible face and a hidden face to swap
-    const vi = visibleNetIndices[i];
-    const hidden = [0,1,2,3,4,5].filter(idx => !visibleNetIndices.includes(idx));
-    const hi = hidden[randomInt(0, hidden.length-1)];
-    [faces[vi], faces[hi]] = [faces[hi], faces[vi]];
-    falseNets.push(faces);
-  }
-  return falseNets;
-}
-
-// Create an incorrect net arrangement that can't fold into a cube
-// by swapping two positions in the net
-function createInvalidNet(validNet) {
-  const newNet = JSON.parse(JSON.stringify(validNet)); // Deep copy
-  // Swap any two random positions to break the net structure
-  const i = randomInt(0, newNet.length - 1);
-  let j;
-  do {
-    j = randomInt(0, newNet.length - 1);
-  } while (j === i);
-  
-  [newNet[i], newNet[j]] = [newNet[j], newNet[i]];
-  return newNet;
 }
 
 function renderPuzzle() {
@@ -137,38 +99,50 @@ function renderPuzzle() {
   // 3. Pick a random net for the correct answer
   const correctNetIdx = randomInt(0, cubeNets.length-1);
   const correctNet = cubeNets[correctNetIdx];
-  // 4. Create the faces for the correct net
-  // We'll map in a way that visible faces (first three) match the cube
-  const visibleFaceIndices = getVisibleFaces(); // [0, 2, 4]
-  const correctFaces = Array(6).fill(0);
-  // Map visible faces to first three net positions
-  correctFaces[0] = cube.faces[visibleFaceIndices[0]];
-  correctFaces[1] = cube.faces[visibleFaceIndices[1]];
-  correctFaces[2] = cube.faces[visibleFaceIndices[2]];
-  // Fill remaining face positions with hidden faces
-  let hiddenFaceIdx = 0;
-  for (let i = 3; i < 6; i++) {
-    while (visibleFaceIndices.includes(hiddenFaceIdx)) {
-      hiddenFaceIdx++;
-    }
-    correctFaces[i] = cube.faces[hiddenFaceIdx];
-    hiddenFaceIdx++;
-  }
-  // 5. Create three incorrect options using the same net shape but shuffled face values
+  // 4. Map cube faces to net faces using the canonical mapping
+  const correctFaces = correctNet.faceMap.map(idx => cube.faces[idx]);
+  
+  // 5. Generate 3 false nets by creating alternative cube orientations
+  const usedNetIndices = [correctNetIdx];
   const options = [
-    { net: correctNet, faces: correctFaces.slice(), correct: true }
+    { net: correctNet, faces: correctFaces, correct: true }
   ];
-  for (let i = 0; i < 3; i++) {
-    let faces = correctFaces.slice();
-    // Shuffle until not equal to correctFaces
+  
+  while (options.length < 4) {
+    // For incorrect answers, we'll create a valid cube with different face values
+    const altCube = { faces: [...cube.faces] };
+    
+    // Create a wrong answer by swapping 2-4 pairs of face values
+    // This creates a geometrically valid cube with incorrect face placements
+    const numSwaps = randomInt(2, 3); // 2 or 3 swaps
+    for (let i = 0; i < numSwaps; i++) {
+      const idx1 = randomInt(0, 5);
+      let idx2;
+      do {
+        idx2 = randomInt(0, 5);
+      } while (idx2 === idx1);
+      [altCube.faces[idx1], altCube.faces[idx2]] = [altCube.faces[idx2], altCube.faces[idx1]];
+    }
+    
+    // Select a random net (can be the same shape as correct answer)
+    let netIdx;
     do {
-      shuffle(faces);
-    } while (faces.join(',') === correctFaces.join(','));
-    options.push({ net: correctNet, faces: faces.slice(), correct: false });
+      netIdx = randomInt(0, cubeNets.length-1);
+    } while (usedNetIndices.includes(netIdx));
+    usedNetIndices.push(netIdx);
+    
+    const net = cubeNets[netIdx];
+    if (!net.layout || !net.faceMap || net.layout.length !== 6 || net.faceMap.length !== 6) continue;
+    
+    // Map the altered cube faces to the net
+    const faces = net.faceMap.map(idx => altCube.faces[idx]);
+    options.push({ net, faces, correct: false });
   }
+  
   shuffle(options);
   const netOptionsList = document.getElementById('net-options-list');
   netOptionsList.innerHTML = options.map((opt, idx) => renderNetSVG(opt.net, opt.faces, idx)).join('');
+  
   // Option selection
   document.querySelectorAll('.net-option').forEach(el => {
     el.onclick = () => {
@@ -176,6 +150,7 @@ function renderPuzzle() {
       el.classList.add('selected');
     };
   });
+  
   window.currentPuzzle = { options };
   document.getElementById('feedback').textContent = '';
   document.getElementById('next-btn').style.display = 'none';
