@@ -67,9 +67,53 @@ function renderCube3D(faces) {
   document.getElementById('cube-visual').innerHTML = svg;
 }
 
-function renderNetSVG(net, faces, optionIdx) {
-  // Render a net as an SVG grid with numbers on faces
-  // Find bounds
+function lerp(a, b, t) {
+  return a + (b - a) * t;
+}
+
+// 2D cube face projections for folding animation (relative to SVG)
+// We'll use the same cube projection as renderCube3D
+const cubeFaceProjections = [
+  // Top
+  [ [60,20], [100,40], [60,60], [20,40] ],
+  // Left
+  [ [20,40], [60,60], [60,100], [20,80] ],
+  // Right
+  [ [60,60], [100,40], [100,80], [60,100] ],
+  // Back (hidden, not shown)
+  [ [60,20], [100,40], [100,80], [60,100] ],
+  // Bottom (hidden, not shown)
+  [ [20,80], [60,100], [100,80], [60,60] ],
+  // Front (hidden, not shown)
+  [ [20,40], [60,20], [60,60], [20,80] ]
+];
+
+function getNetFacePolygon(net, faceIdx, t) {
+  // Net face: grid cell (x, y) to SVG rect
+  const cellSize = 32;
+  const xs = net.map(([x]) => x);
+  const ys = net.map(([,y]) => y);
+  const minX = Math.min(...xs);
+  const minY = Math.min(...ys);
+  const [x, y] = net[faceIdx];
+  // Net rect corners
+  const netPoly = [
+    [ (x-minX)*cellSize, (y-minY)*cellSize ],
+    [ (x-minX+1)*cellSize, (y-minY)*cellSize ],
+    [ (x-minX+1)*cellSize, (y-minY+1)*cellSize ],
+    [ (x-minX)*cellSize, (y-minY+1)*cellSize ]
+  ];
+  // Cube face projection (use first 3 faces for visible, fallback to net for others)
+  const cubePoly = cubeFaceProjections[faceIdx < 3 ? faceIdx : 0];
+  // Interpolate each corner
+  return netPoly.map((pt, i) => [
+    lerp(pt[0], cubePoly[i%4][0], t),
+    lerp(pt[1], cubePoly[i%4][1], t)
+  ]);
+}
+
+function renderNetSVGAnimated(net, faces, optionIdx, t) {
+  // Render a net as an SVG grid with faces morphing to cube positions
   const xs = net.map(([x]) => x);
   const ys = net.map(([,y]) => y);
   const minX = Math.min(...xs);
@@ -77,50 +121,51 @@ function renderNetSVG(net, faces, optionIdx) {
   const maxX = Math.max(...xs);
   const maxY = Math.max(...ys);
   const cellSize = 32;
-  // SVG grid
-  let svg = `<svg width="${(maxX-minX+1)*cellSize}" height="${(maxY-minY+1)*cellSize}">`;
+  const w = Math.max((maxX-minX+1)*cellSize, 120);
+  const h = Math.max((maxY-minY+1)*cellSize, 120);
+  let svg = `<svg width="${w}" height="${h}">`;
   for (let i = 0; i < net.length; i++) {
-    const [x, y] = net[i];
-    const fx = (x-minX)*cellSize;
-    const fy = (y-minY)*cellSize;
-    svg += `<rect x="${fx}" y="${fy}" width="${cellSize}" height="${cellSize}" rx="6" fill="#2c313a" stroke="#b5ead7" stroke-width="2"/>`;
-    svg += `<text x="${fx+cellSize/2}" y="${fy+cellSize/2+7}" text-anchor="middle" font-size="18" fill="#f7b7a3" font-family="Kanit">${faces[i]}</text>`;
+    const poly = getNetFacePolygon(net, i, t);
+    const points = poly.map(([x, y]) => `${x},${y}`).join(' ');
+    svg += `<polygon points="${points}" fill="#2c313a" stroke="#b5ead7" stroke-width="2"/>`;
+    // Center for text
+    const cx = poly.reduce((sum, p) => sum + p[0], 0) / 4;
+    const cy = poly.reduce((sum, p) => sum + p[1], 0) / 4 + 7;
+    svg += `<text x="${cx}" y="${cy}" text-anchor="middle" font-size="18" fill="#f7b7a3" font-family="Kanit">${faces[i]}</text>`;
   }
   svg += '</svg>';
-  return `<div class="net-option" data-option="${optionIdx}">${svg}</div>`;
+  return `<div class="net-option" data-option="${optionIdx}">
+    ${svg}
+    <input type="range" min="0" max="100" value="0" class="fold-slider" data-option="${optionIdx}" style="width:90%;margin-top:0.5em;">
+  </div>`;
 }
 
 function renderPuzzle() {
   const puzzle = generatePuzzle();
-  // For the 3D cube, just show the first 3 faces
   renderCube3D(puzzle.faces.slice(0,3));
   // Generate 3 options: 1 correct, 2 random nets with shuffled faces
   const options = [
     { net: puzzle.net, faces: puzzle.faces.slice(), correct: true }
   ];
   while (options.length < 3) {
-    // Pick a random net and shuffle faces
     const netIdx = randomInt(0, cubeNets.length - 1);
     const net = cubeNets[netIdx];
     let faces = puzzle.faces.slice();
-    // Shuffle faces for wrong options
     for (let i = faces.length - 1; i > 0; i--) {
       const j = randomInt(0, i);
       [faces[i], faces[j]] = [faces[j], faces[i]];
     }
-    // Avoid duplicate correct option
     if (!options.some(opt => opt.net === net && opt.faces.join(',') === faces.join(','))) {
       options.push({ net, faces, correct: false });
     }
   }
-  // Shuffle options
   for (let i = options.length - 1; i > 0; i--) {
     const j = randomInt(0, i);
     [options[i], options[j]] = [options[j], options[i]];
   }
-  // Render options
+  // Render options with slider at 0
   const netOptionsList = document.getElementById('net-options-list');
-  netOptionsList.innerHTML = options.map((opt, idx) => renderNetSVG(opt.net, opt.faces, idx)).join('');
+  netOptionsList.innerHTML = options.map((opt, idx) => renderNetSVGAnimated(opt.net, opt.faces, idx, 0)).join('');
   // Option selection
   document.querySelectorAll('.net-option').forEach(el => {
     el.onclick = () => {
@@ -128,7 +173,17 @@ function renderPuzzle() {
       el.classList.add('selected');
     };
   });
-  // Store correct answer
+  // Slider animation
+  document.querySelectorAll('.fold-slider').forEach(slider => {
+    slider.oninput = (e) => {
+      const idx = parseInt(slider.getAttribute('data-option'));
+      const t = slider.value / 100;
+      const opt = options[idx];
+      // Replace SVG for this option
+      const parent = slider.parentElement;
+      parent.querySelector('svg').outerHTML = renderNetSVGAnimated(opt.net, opt.faces, idx, t).match(/<svg[\s\S]*<\/svg>/)[0];
+    };
+  });
   window.currentPuzzle = { options };
   document.getElementById('feedback').textContent = '';
   document.getElementById('next-btn').style.display = 'none';
