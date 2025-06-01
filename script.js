@@ -113,29 +113,99 @@ function generateFalseNets(correctFaces, net, visibleNetIndices) {
   return falseNets;
 }
 
+// Create an incorrect net arrangement that can't fold into a cube
+// by swapping two positions in the net
+function createInvalidNet(validNet) {
+  const newNet = JSON.parse(JSON.stringify(validNet)); // Deep copy
+  // Swap any two random positions to break the net structure
+  const i = randomInt(0, newNet.length - 1);
+  let j;
+  do {
+    j = randomInt(0, newNet.length - 1);
+  } while (j === i);
+  
+  [newNet[i], newNet[j]] = [newNet[j], newNet[i]];
+  return newNet;
+}
+
 function renderPuzzle() {
   // 1. Generate cube
   const cube = generateCube();
   // 2. Render cube SVG
   renderCubeSVG(cube);
-  // 3. Pick a random net
-  const netIdx = randomInt(0, cubeNets.length-1);
-  const net = cubeNets[netIdx];
-  // 4. Map cube faces to net faces (random mapping)
-  const correctFaces = mapCubeToNet(cube, netIdx);
-  // 5. Determine which net faces correspond to the visible cube faces
-  // For this demo, just use first 3 net faces as visible
-  const visibleNetIndices = [0,1,2];
-  // 6. Generate 3 false nets by swapping one visible face with a hidden face
-  const falseNets = generateFalseNets(correctFaces, net, visibleNetIndices);
-  // 7. Shuffle and render options
+  // 3. Pick a random net for the correct answer
+  const correctNetIdx = randomInt(0, cubeNets.length-1);
+  const correctNet = cubeNets[correctNetIdx];
+  
+  // 4. Create the faces for the correct net
+  // We'll map in a way that visible faces (first three) match the cube
+  const visibleFaceIndices = getVisibleFaces(); // [0, 2, 4]
+  const correctFaces = Array(6).fill(0);
+  
+  // Map visible faces to first three net positions
+  correctFaces[0] = cube.faces[visibleFaceIndices[0]];
+  correctFaces[1] = cube.faces[visibleFaceIndices[1]];
+  correctFaces[2] = cube.faces[visibleFaceIndices[2]];
+  
+  // Fill remaining face positions with hidden faces
+  let hiddenFaceIdx = 0;
+  for (let i = 3; i < 6; i++) {
+    while (visibleFaceIndices.includes(hiddenFaceIdx)) {
+      hiddenFaceIdx++;
+    }
+    correctFaces[i] = cube.faces[hiddenFaceIdx];
+    hiddenFaceIdx++;
+  }
+  
+  // 5. Create three incorrect options
+  // Each one will be a different valid net but with the same face values
+  // OR same net shape but with swapped face values
   const options = [
-    { faces: correctFaces, correct: true },
-    ...falseNets.map(faces => ({ faces, correct: false }))
+    { net: correctNet, faces: correctFaces.slice(), correct: true }
   ];
+  
+  // Track used net indices to avoid duplicates
+  const usedNetIndices = [correctNetIdx];
+  
+  while (options.length < 4) {
+    // Decide whether to use a different net shape or swap face values
+    const useDifferentNet = Math.random() > 0.5 || usedNetIndices.length >= cubeNets.length;
+    
+    if (useDifferentNet) {
+      // Use the same net, but swap two face values to make it incorrect
+      const faces = correctFaces.slice();
+      const i = randomInt(0, faces.length - 1);
+      let j;
+      do {
+        j = randomInt(0, faces.length - 1);
+      } while (j === i);
+      [faces[i], faces[j]] = [faces[j], faces[i]];
+      
+      options.push({
+        net: correctNet,
+        faces: faces,
+        correct: false
+      });
+    } else {
+      // Use a different net shape (still valid, but not the same as correct one)
+      let newNetIdx;
+      do {
+        newNetIdx = randomInt(0, cubeNets.length - 1);
+      } while (usedNetIndices.includes(newNetIdx));
+      
+      usedNetIndices.push(newNetIdx);
+      options.push({
+        net: cubeNets[newNetIdx],
+        faces: correctFaces.slice(), // Same face values, different arrangement
+        correct: false
+      });
+    }
+  }
+  
   shuffle(options);
+  
   const netOptionsList = document.getElementById('net-options-list');
-  netOptionsList.innerHTML = options.map((opt, idx) => renderNetSVG(net, opt.faces, idx)).join('');
+  netOptionsList.innerHTML = options.map((opt, idx) => renderNetSVG(opt.net, opt.faces, idx)).join('');
   // Option selection
   document.querySelectorAll('.net-option').forEach(el => {
     el.onclick = () => {
