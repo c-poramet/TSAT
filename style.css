@@ -120,45 +120,27 @@ body {
 }
 
 .cube-face {
-  width: 100px;
-  height: 100px;
+  width: 180px;
+  height: 180px;
   position: relative;
   border: 2px dashed #444;
-  padding: 4px;
+  padding: 8px;
   background-color: #1a1a1a;
   display: flex;
   flex-direction: column;
+  justify-content: center;
+  align-items: center;
 }
 
-.face-label {
-  position: absolute;
-  top: 2px;
-  left: 2px;
-  font-size: 0.6rem;
-  color: #ddd;
-  background-color: rgba(0, 0, 0, 0.5);
-  padding: 2px 4px;
-  border-radius: 2px;
-  z-index: 2;
-}
-
-.face-type-label {
-  position: absolute;
-  bottom: 2px;
-  right: 2px;
-  font-size: 0.6rem;
-  color: #ddd;
-  background-color: rgba(0, 0, 0, 0.5);
-  padding: 2px 4px;
-  border-radius: 2px;
-  z-index: 2;
+.face-label, .face-type-label {
+  display: none;
 }
 
 .face-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   grid-template-rows: repeat(3, 1fr);
-  gap: 2px;
+  gap: 6px;
   width: 100%;
   height: 100%;
 }
@@ -169,23 +151,27 @@ body {
   justify-content: center;
   background-color: #333;
   color: white;
-  font-size: 0.9rem;
-  font-weight: 500;
-  border-radius: 2px;
+  font-size: 2.2rem;
+  font-weight: 600;
+  border-radius: 4px;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  word-break: break-all;
 }
 
 .new-net-btn {
   background-color: #356cb1;
   color: white;
   border: none;
-  padding: 0.6rem 1.2rem;
-  border-radius: 4px;
+  padding: 0.8rem 2rem;
+  border-radius: 6px;
   font-family: 'Kanit', sans-serif;
   font-weight: 500;
-  font-size: 1rem;
+  font-size: 1.2rem;
   cursor: pointer;
   transition: background-color 0.2s ease;
-  margin-top: 1rem;
+  margin-top: 2rem;
 }
 
 .new-net-btn:hover {
@@ -211,36 +197,22 @@ body {
 }
 
 /* Media queries for responsive net layout */
-@media (max-width: 768px) {
-  .container {
-    flex-direction: column;
+@media (max-width: 900px) {
+  .cube-face {
+    width: 120px;
+    height: 120px;
   }
-  
-  .header-text h1 {
-    font-size: 2rem;
+  .grid-cell {
+    font-size: 1.2rem;
   }
-  
+}
+
+@media (max-width: 600px) {
   .cube-face {
     width: 80px;
     height: 80px;
   }
-  
   .grid-cell {
-    font-size: 0.7rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .cube-face {
-    width: 60px;
-    height: 60px;
-  }
-  
-  .grid-cell {
-    font-size: 0.6rem;
-  }
-  
-  .face-label, .face-type-label {
-    font-size: 0.5rem;
+    font-size: 0.8rem;
   }
 }

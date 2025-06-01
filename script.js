@@ -5,10 +5,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // Types of patterns we can apply to faces
     patternTypes: ['colors', 'letters', 'numbers'],
     
-    // Color patterns (easily distinguishable)
+    // Only primary and secondary colors
     colors: [
-      'red', 'blue', 'green', 'yellow', 'orange', 'purple', 
-      'cyan', 'magenta', 'lime', 'pink', 'teal', 'navy'
+      'red', 'blue', 'yellow', 'green', 'orange', 'purple'
     ],
     
     // Letter patterns (uppercase alphabet)
@@ -17,137 +16,52 @@ document.addEventListener('DOMContentLoaded', () => {
     // Number patterns (1-100)
     numbers: Array.from({length: 100}, (_, i) => i + 1),
     
-    // The 11 possible cube net layouts
-    // Each array represents the relative positions of the 6 faces
-    // 0: front, 1: right, 2: back, 3: left, 4: top, 5: bottom
+    // 11 valid cube net layouts (from reference image)
     netLayouts: [
-      // T-shape
-      {
-        name: 'T-shape',
-        faces: [
-          { face: 5, x: 1, y: 0, rotation: 0 },
-          { face: 0, x: 1, y: 1, rotation: 0 },
-          { face: 1, x: 2, y: 1, rotation: 0 },
-          { face: 2, x: 1, y: 2, rotation: 0 },
-          { face: 3, x: 0, y: 1, rotation: 0 },
-          { face: 4, x: 1, y: 3, rotation: 0 }
-        ]
-      },
-      // Cross shape
-      {
-        name: 'Cross shape',
-        faces: [
-          { face: 0, x: 1, y: 1, rotation: 0 },
-          { face: 1, x: 2, y: 1, rotation: 0 },
-          { face: 2, x: 3, y: 1, rotation: 0 },
-          { face: 3, x: 0, y: 1, rotation: 0 },
-          { face: 4, x: 1, y: 0, rotation: 0 },
-          { face: 5, x: 1, y: 2, rotation: 0 }
-        ]
-      },
-      // Plus shape
-      {
-        name: 'Plus shape',
-        faces: [
-          { face: 0, x: 1, y: 1, rotation: 0 },
-          { face: 1, x: 2, y: 1, rotation: 0 },
-          { face: 2, x: 1, y: 3, rotation: 180 },
-          { face: 3, x: 0, y: 1, rotation: 0 },
-          { face: 4, x: 1, y: 0, rotation: 0 },
-          { face: 5, x: 1, y: 2, rotation: 0 }
-        ]
-      },
-      // Line shape
-      {
-        name: 'Line shape',
-        faces: [
-          { face: 0, x: 0, y: 0, rotation: 0 },
-          { face: 1, x: 1, y: 0, rotation: 0 },
-          { face: 2, x: 2, y: 0, rotation: 0 },
-          { face: 3, x: 3, y: 0, rotation: 0 },
-          { face: 4, x: 4, y: 0, rotation: 0 },
-          { face: 5, x: 5, y: 0, rotation: 0 }
-        ]
-      },
-      // Z-shape
-      {
-        name: 'Z-shape',
-        faces: [
-          { face: 0, x: 1, y: 0, rotation: 0 },
-          { face: 1, x: 2, y: 0, rotation: 0 },
-          { face: 2, x: 2, y: 1, rotation: 0 },
-          { face: 3, x: 0, y: 1, rotation: 0 },
-          { face: 4, x: 0, y: 0, rotation: 0 },
-          { face: 5, x: 1, y: 1, rotation: 0 }
-        ]
-      },
-      // Adding 6 more layouts to make 11 total
-      {
-        name: 'L-shape',
-        faces: [
-          { face: 0, x: 0, y: 0, rotation: 0 },
-          { face: 1, x: 1, y: 0, rotation: 0 },
-          { face: 2, x: 2, y: 0, rotation: 0 },
-          { face: 3, x: 0, y: 1, rotation: 0 },
-          { face: 4, x: 1, y: 1, rotation: 0 },
-          { face: 5, x: 2, y: 1, rotation: 0 }
-        ]
-      },
-      {
-        name: 'T-reversed',
-        faces: [
-          { face: 0, x: 1, y: 1, rotation: 0 },
-          { face: 1, x: 2, y: 1, rotation: 0 },
-          { face: 2, x: 1, y: 0, rotation: 0 },
-          { face: 3, x: 0, y: 1, rotation: 0 },
-          { face: 4, x: 3, y: 1, rotation: 0 },
-          { face: 5, x: 1, y: 2, rotation: 0 }
-        ]
-      },
-      {
-        name: 'H-shape',
-        faces: [
-          { face: 0, x: 0, y: 1, rotation: 0 },
-          { face: 1, x: 1, y: 1, rotation: 0 },
-          { face: 2, x: 2, y: 1, rotation: 0 },
-          { face: 3, x: 0, y: 0, rotation: 0 },
-          { face: 4, x: 1, y: 0, rotation: 0 },
-          { face: 5, x: 2, y: 0, rotation: 0 }
-        ]
-      },
-      {
-        name: 'Tower shape',
-        faces: [
-          { face: 0, x: 1, y: 0, rotation: 0 },
-          { face: 1, x: 1, y: 1, rotation: 0 },
-          { face: 2, x: 1, y: 2, rotation: 0 },
-          { face: 3, x: 1, y: 3, rotation: 0 },
-          { face: 4, x: 0, y: 1, rotation: 90 },
-          { face: 5, x: 2, y: 1, rotation: 270 }
-        ]
-      },
-      {
-        name: 'P-shape',
-        faces: [
-          { face: 0, x: 0, y: 0, rotation: 0 },
-          { face: 1, x: 1, y: 0, rotation: 0 },
-          { face: 2, x: 1, y: 1, rotation: 0 },
-          { face: 3, x: 0, y: 1, rotation: 0 },
-          { face: 4, x: 0, y: 2, rotation: 0 },
-          { face: 5, x: 1, y: 2, rotation: 0 }
-        ]
-      },
-      {
-        name: 'W-shape',
-        faces: [
-          { face: 0, x: 0, y: 0, rotation: 0 },
-          { face: 1, x: 1, y: 0, rotation: 0 },
-          { face: 2, x: 1, y: 1, rotation: 0 },
-          { face: 3, x: 2, y: 1, rotation: 0 },
-          { face: 4, x: 2, y: 2, rotation: 0 },
-          { face: 5, x: 3, y: 2, rotation: 0 }
-        ]
-      }
+      // 1
+      { name: 'Net 1', faces: [
+        {face:0,x:1,y:0},{face:1,x:1,y:1},{face:2,x:1,y:2},{face:3,x:0,y:1},{face:4,x:2,y:1},{face:5,x:3,y:1}
+      ]},
+      // 2
+      { name: 'Net 2', faces: [
+        {face:0,x:1,y:0},{face:1,x:1,y:1},{face:2,x:1,y:2},{face:3,x:0,y:2},{face:4,x:2,y:2},{face:5,x:2,y:3}
+      ]},
+      // 3
+      { name: 'Net 3', faces: [
+        {face:0,x:0,y:1},{face:1,x:1,y:1},{face:2,x:2,y:1},{face:3,x:2,y:0},{face:4,x:2,y:2},{face:5,x:3,y:2}
+      ]},
+      // 4
+      { name: 'Net 4', faces: [
+        {face:0,x:0,y:1},{face:1,x:1,y:1},{face:2,x:2,y:1},{face:3,x:2,y:0},{face:4,x:2,y:2},{face:5,x:3,y:1}
+      ]},
+      // 5
+      { name: 'Net 5', faces: [
+        {face:0,x:1,y:0},{face:1,x:1,y:1},{face:2,x:1,y:2},{face:3,x:0,y:2},{face:4,x:2,y:2},{face:5,x:0,y:3}
+      ]},
+      // 6
+      { name: 'Net 6', faces: [
+        {face:0,x:1,y:0},{face:1,x:1,y:1},{face:2,x:1,y:2},{face:3,x:0,y:2},{face:4,x:2,y:2},{face:5,x:2,y:3}
+      ]},
+      // 7
+      { name: 'Net 7', faces: [
+        {face:0,x:1,y:0},{face:1,x:1,y:1},{face:2,x:1,y:2},{face:3,x:0,y:1},{face:4,x:2,y:1},{face:5,x:2,y:2}
+      ]},
+      // 8
+      { name: 'Net 8', faces: [
+        {face:0,x:1,y:0},{face:1,x:1,y:1},{face:2,x:1,y:2},{face:3,x:0,y:1},{face:4,x:2,y:1},{face:5,x:0,y:2}
+      ]},
+      // 9
+      { name: 'Net 9', faces: [
+        {face:0,x:1,y:0},{face:1,x:1,y:1},{face:2,x:1,y:2},{face:3,x:0,y:1},{face:4,x:2,y:1},{face:5,x:1,y:3}
+      ]},
+      // 10
+      { name: 'Net 10', faces: [
+        {face:0,x:1,y:0},{face:1,x:1,y:1},{face:2,x:1,y:2},{face:3,x:0,y:1},{face:4,x:2,y:1},{face:5,x:2,y:0}
+      ]},
+      // 11
+      { name: 'Net 11', faces: [
+        {face:0,x:1,y:0},{face:1,x:1,y:1},{face:2,x:1,y:2},{face:3,x:0,y:1},{face:4,x:2,y:1},{face:5,x:0,y:0}
+      ]}
     ]
   };
 
@@ -269,10 +183,15 @@ document.addEventListener('DOMContentLoaded', () => {
             switch(facePattern.type) {
               case 'colors':
                 cell.style.backgroundColor = value;
+                cell.textContent = '';
                 break;
               case 'letters':
+                cell.textContent = value;
+                cell.style.backgroundColor = '#222';
+                break;
               case 'numbers':
                 cell.textContent = value;
+                cell.style.backgroundColor = '#222';
                 break;
             }
             
@@ -280,27 +199,9 @@ document.addEventListener('DOMContentLoaded', () => {
           }
         }
         
-        // Add face label
-        const faceLabel = document.createElement('div');
-        faceLabel.className = 'face-label';
-        faceLabel.textContent = `Face ${facePos.face + 1}`;
-        
-        // Add face type label
-        const faceTypeLabel = document.createElement('div');
-        faceTypeLabel.className = 'face-type-label';
-        faceTypeLabel.textContent = facePattern.type;
-        
-        faceElement.appendChild(faceLabel);
-        faceElement.appendChild(faceTypeLabel);
         faceElement.appendChild(faceGrid);
-        
         netContainer.appendChild(faceElement);
       });
-      
-      // Add info about the current layout
-      const layoutInfo = document.createElement('div');
-      layoutInfo.className = 'layout-info';
-      layoutInfo.textContent = `Layout: ${this.currentLayout.name}`;
       
       // Create a new net button
       const newNetBtn = document.createElement('button');
@@ -313,7 +214,6 @@ document.addEventListener('DOMContentLoaded', () => {
       });
       
       // Append elements to the container
-      container.appendChild(layoutInfo);
       container.appendChild(netContainer);
       container.appendChild(newNetBtn);
     }
