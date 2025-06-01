@@ -112,8 +112,160 @@ function getNetFacePolygon(net, faceIdx, t) {
   ]);
 }
 
+// --- 3D Cube Folding Animation for the T Net ---
+// We'll implement true folding for the T net (net 1 in cubeNets)
+// The T net layout (face indices):
+//   [ ] [0] [ ] [ ]
+//   [1] [2] [3] [4]
+//   [ ] [5] [ ] [ ]
+// Face 0: top, Face 2: center, Faces 1/3/4: sides, Face 5: bottom
+
+// 3D positions for the T net (each face: center [x,y,z], normal [nx,ny,nz])
+const T_NET_3D = [
+  // Face 0 (top)
+  { center: [0, 1, 0], normal: [0, 1, 0], hinge: 2, edge: 'top' },
+  // Face 1 (left)
+  { center: [-1, 0, 0], normal: [-1, 0, 0], hinge: 2, edge: 'left' },
+  // Face 2 (center)
+  { center: [0, 0, 0], normal: [0, 0, 1], hinge: null, edge: null },
+  // Face 3 (right)
+  { center: [1, 0, 0], normal: [1, 0, 0], hinge: 2, edge: 'right' },
+  // Face 4 (bottom)
+  { center: [0, -1, 0], normal: [0, -1, 0], hinge: 2, edge: 'bottom' },
+  // Face 5 (down)
+  { center: [0, 0, -1], normal: [0, 0, -1], hinge: 2, edge: 'down' },
+];
+
+// For each face, define the hinge axis and rotation angle
+const T_NET_FOLD = [
+  // Face 0: rotate -90° around X (up)
+  { axis: [1,0,0], angle: -Math.PI/2, hingeEdge: [[-0.5,0.5,0],[0.5,0.5,0]] },
+  // Face 1: rotate 90° around Y (left)
+  { axis: [0,1,0], angle: Math.PI/2, hingeEdge: [[-0.5,-0.5,0],[-0.5,0.5,0]] },
+  // Face 2: center, no rotation
+  { axis: [0,0,1], angle: 0, hingeEdge: null },
+  // Face 3: rotate -90° around Y (right)
+  { axis: [0,1,0], angle: -Math.PI/2, hingeEdge: [[0.5,0.5,0],[0.5,-0.5,0]] },
+  // Face 4: rotate 90° around X (down)
+  { axis: [1,0,0], angle: Math.PI/2, hingeEdge: [[-0.5,-0.5,0],[0.5,-0.5,0]] },
+  // Face 5: rotate 180° around X (bottom)
+  { axis: [1,0,0], angle: Math.PI, hingeEdge: [[-0.5,-0.5,0],[0.5,-0.5,0]] },
+];
+
+// 3D to 2D projection (isometric)
+function project([x, y, z]) {
+  const scale = 48;
+  const px = 60 + (x - z) * scale * 0.7;
+  const py = 60 + (y - z) * scale * 0.5;
+  return [px, py];
+}
+
+// Rotate a point around an axis by theta (Rodrigues' rotation formula)
+function rotateAroundAxis(p, axis, theta) {
+  const [x, y, z] = p;
+  const [u, v, w] = axis;
+  const L = u*u + v*v + w*w;
+  const cosT = Math.cos(theta);
+  const sinT = Math.sin(theta);
+  return [
+    (u*(u*x+v*y+w*z)*(1-cosT)+L*x*cosT+Math.sqrt(L)*(-w*y+v*z)*sinT)/L,
+    (v*(u*x+v*y+w*z)*(1-cosT)+L*y*cosT+Math.sqrt(L)*(w*x-u*z)*sinT)/L,
+    (w*(u*x+v*y+w*z)*(1-cosT)+L*z*cosT+Math.sqrt(L)*(-v*x+u*y)*sinT)/L
+  ];
+}
+
+// Get the 4 corners of a face in 3D, centered at [cx,cy,cz], normal to [nx,ny,nz]
+function getFaceCorners3D(center, normal) {
+  // For axis-aligned faces, this is easy
+  // Each face is 1x1 square
+  // Find two perpendicular vectors
+  let [nx, ny, nz] = normal;
+  let up = Math.abs(nz) === 1 ? [0,1,0] : [0,0,1];
+  // side1 = up x normal
+  let side1 = [
+    up[1]*nz - up[2]*ny,
+    up[2]*nx - up[0]*nz,
+    up[0]*ny - up[1]*nx
+  ];
+  // Normalize
+  let len = Math.sqrt(side1[0]**2 + side1[1]**2 + side1[2]**2);
+  side1 = side1.map(v => v/len);
+  // side2 = normal x side1
+  let side2 = [
+    ny*side1[2] - nz*side1[1],
+    nz*side1[0] - nx*side1[2],
+    nx*side1[1] - ny*side1[0]
+  ];
+  len = Math.sqrt(side2[0]**2 + side2[1]**2 + side2[2]**2);
+  side2 = side2.map(v => v/len);
+  // 4 corners
+  return [
+    [center[0]-0.5*side1[0]-0.5*side2[0], center[1]-0.5*side1[1]-0.5*side2[1], center[2]-0.5*side1[2]-0.5*side2[2]],
+    [center[0]+0.5*side1[0]-0.5*side2[0], center[1]+0.5*side1[1]-0.5*side2[1], center[2]+0.5*side1[2]-0.5*side2[2]],
+    [center[0]+0.5*side1[0]+0.5*side2[0], center[1]+0.5*side1[1]+0.5*side2[1], center[2]+0.5*side1[2]+0.5*side2[2]],
+    [center[0]-0.5*side1[0]+0.5*side2[0], center[1]-0.5*side1[1]+0.5*side2[1], center[2]-0.5*side1[2]+0.5*side2[2]]
+  ];
+}
+
+function renderTNetFoldSVG(faces, t) {
+  // For each face, rotate from net to cube position
+  let svg = `<svg width="120" height="120">`;
+  for (let i = 0; i < 6; i++) {
+    // Start at net position
+    let center = T_NET_3D[i].center;
+    let normal = T_NET_3D[i].normal;
+    // If not center, rotate around hinge axis
+    if (i !== 2) {
+      const { axis, angle, hingeEdge } = T_NET_FOLD[i];
+      const theta = angle * t;
+      // Move to hinge
+      let corners = getFaceCorners3D(center, normal).map(pt => {
+        // Move so hinge edge is at origin
+        const [hx, hy, hz] = hingeEdge[0];
+        return [pt[0]-center[0]+hx, pt[1]-center[1]+hy, pt[2]-center[2]+hz];
+      });
+      // Rotate
+      corners = corners.map(pt => rotateAroundAxis(pt, axis, theta));
+      // Move back
+      corners = corners.map(pt => [pt[0]+center[0]-hingeEdge[0][0], pt[1]+center[1]-hingeEdge[0][1], pt[2]+center[2]-hingeEdge[0][2]]);
+      // Project
+      const poly = corners.map(project);
+      svg += `<polygon points="${poly.map(([x,y])=>x+','+y).join(' ')}" fill="#2c313a" stroke="#b5ead7" stroke-width="2"/>`;
+      // Center for text
+      const cx = poly.reduce((sum, p) => sum + p[0], 0) / 4;
+      const cy = poly.reduce((sum, p) => sum + p[1], 0) / 4 + 7;
+      svg += `<text x="${cx}" y="${cy}" text-anchor="middle" font-size="18" fill="#f7b7a3" font-family="Kanit">${faces[i]}</text>`;
+    } else {
+      // Center face, no rotation
+      const poly = getFaceCorners3D(center, normal).map(project);
+      svg += `<polygon points="${poly.map(([x,y])=>x+','+y).join(' ')}" fill="#2c313a" stroke="#b5ead7" stroke-width="2"/>`;
+      const cx = poly.reduce((sum, p) => sum + p[0], 0) / 4;
+      const cy = poly.reduce((sum, p) => sum + p[1], 0) / 4 + 7;
+      svg += `<text x="${cx}" y="${cy}" text-anchor="middle" font-size="18" fill="#f7b7a3" font-family="Kanit">${faces[i]}</text>`;
+    }
+  }
+  svg += '</svg>';
+  return svg;
+}
+
 function renderNetSVGAnimated(net, faces, optionIdx, t) {
-  // Render a net as an SVG grid with faces morphing to cube positions
+  // If this is the T net, use 3D fold animation
+  const isTNet = JSON.stringify(net) === JSON.stringify(cubeNets[0]);
+  let svg;
+  if (isTNet) {
+    svg = renderTNetFoldSVG(faces, t);
+  } else {
+    // fallback: just morph as before
+    svg = renderNetSVGAnimatedOld(net, faces, t);
+  }
+  return `<div class="net-option" data-option="${optionIdx}">
+    ${svg}
+    <input type="range" min="0" max="100" value="0" class="fold-slider" data-option="${optionIdx}" style="width:90%;margin-top:0.5em;">
+  </div>`;
+}
+
+// fallback for non-T nets
+function renderNetSVGAnimatedOld(net, faces, t) {
   const xs = net.map(([x]) => x);
   const ys = net.map(([,y]) => y);
   const minX = Math.min(...xs);
@@ -134,10 +286,7 @@ function renderNetSVGAnimated(net, faces, optionIdx, t) {
     svg += `<text x="${cx}" y="${cy}" text-anchor="middle" font-size="18" fill="#f7b7a3" font-family="Kanit">${faces[i]}</text>`;
   }
   svg += '</svg>';
-  return `<div class="net-option" data-option="${optionIdx}">
-    ${svg}
-    <input type="range" min="0" max="100" value="0" class="fold-slider" data-option="${optionIdx}" style="width:90%;margin-top:0.5em;">
-  </div>`;
+  return svg;
 }
 
 function renderPuzzle() {
