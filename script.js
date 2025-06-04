@@ -400,7 +400,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
           } else if (rotatedFacePattern.type === 'numbers') {
             const val = rotatedFacePattern.value.toString();
-            if (["69","96"].includes(val)) {
+            if (["69", "88","96"].includes(val)) {
               skip = true;
             }
           }
