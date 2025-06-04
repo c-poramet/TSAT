@@ -146,17 +146,19 @@ document.addEventListener('DOMContentLoaded', () => {
         maxX = Math.max(maxX, facePos.x);
         maxY = Math.max(maxY, facePos.y);
       });
-      // Calculate scaling for fixed container
       const gridW = maxX - minX + 1;
       const gridH = maxY - minY + 1;
-      const cellSize = 120; // match .cube-face width/height
-      const offsetX = (384 - cellSize * gridW) / 2;
-      const offsetY = (384 - cellSize * gridH) / 2;
+      const cellSize = 120;
+      // Calculate the bounding box of the net
+      const netPixelW = gridW * cellSize;
+      const netPixelH = gridH * cellSize;
+      // Center the net in the fixed-size net-container
+      const offsetX = (netPixelW < 384) ? (384 - netPixelW) / 2 : 0;
+      const offsetY = (netPixelH < 384) ? (384 - netPixelH) / 2 : 0;
       // Add faces to the grid
       this.currentLayout.faces.forEach(facePos => {
         const faceElement = document.createElement('div');
         faceElement.className = 'cube-face';
-        // Absolute positioning
         faceElement.style.left = `${offsetX + (facePos.x - minX) * cellSize}px`;
         faceElement.style.top = `${offsetY + (facePos.y - minY) * cellSize}px`;
         faceElement.style.position = 'absolute';
@@ -192,7 +194,21 @@ document.addEventListener('DOMContentLoaded', () => {
         faceElement.appendChild(faceGrid);
         netContainer.appendChild(faceElement);
       });
-      container.appendChild(netContainer);
+      // Responsive scaling: fit net-container to parent
+      setTimeout(() => {
+        const parent = container;
+        const parentW = parent.offsetWidth;
+        const parentH = parent.offsetHeight;
+        // The net is always 384x384px, but the actual net may be smaller
+        // so we want to scale the net-container to fit inside the parent
+        const scale = Math.min(parentW / Math.max(netPixelW, 1), parentH / Math.max(netPixelH, 1), 1);
+        netContainer.style.transform = `scale(${scale})`;
+        netContainer.style.transformOrigin = 'top left';
+        // Center the scaled net
+        netContainer.style.position = 'absolute';
+        netContainer.style.left = `calc(50% - ${(netPixelW * scale) / 2}px)`;
+        netContainer.style.top = `calc(50% - ${(netPixelH * scale) / 2}px)`;
+      }, 0);
       // Move the New Net button to the control panel
       const controlPanel = document.querySelector('.control-panel');
       controlPanel.innerHTML = '';
@@ -205,6 +221,9 @@ document.addEventListener('DOMContentLoaded', () => {
         this.renderNet(container);
       });
       controlPanel.appendChild(newNetBtn);
+      // Make sure the parent is relative for absolute centering
+      container.style.position = 'relative';
+      container.appendChild(netContainer);
     }
   }
 
