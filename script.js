@@ -322,6 +322,7 @@ document.addEventListener('DOMContentLoaded', () => {
       };
 
       // Helper to highlight the rotated face and pause UI
+      const currentNetLayout = this.currentLayout; // Capture reference for highlighting function
       function highlightRotatedFaceAndPause() {
         // Reset score when incorrect
         resetScore();
@@ -340,6 +341,21 @@ document.addEventListener('DOMContentLoaded', () => {
           if (highlightFace) {
             highlightFace.classList.add('glow-red');
           }
+          
+          // Also highlight the corresponding 3D cube face
+          // Find which cube face corresponds to the rotated net face
+          const faceMap = cubeFaceMaps[currentNetLayout.name];
+          if (faceMap) {
+            const rotatedNetMapping = faceMap.find(mapping => mapping.net === window.rotatedNetIdx);
+            if (rotatedNetMapping) {
+              const cubeFaceName = rotatedNetMapping.cube;
+              const highlight3DFace = document.querySelector(`.cube-face-3d.${cubeFaceName}`);
+              
+              if (highlight3DFace) {
+                highlight3DFace.classList.add('glow-red');
+              }
+            }
+          }
         }
       }
       // When NEW NET is pressed, re-enable buttons and remove highlight
@@ -348,8 +364,11 @@ document.addEventListener('DOMContentLoaded', () => {
         incorrectBtn.disabled = false;
         correctBtn.style.opacity = '1';
         incorrectBtn.style.opacity = '1';
-        // Remove highlight from all faces
+        // Remove highlight from all faces (both net and 3D cube)
         document.querySelectorAll('.net-container .cube-face.glow-red').forEach(el => {
+          el.classList.remove('glow-red');
+        });
+        document.querySelectorAll('.cube-face-3d.glow-red').forEach(el => {
           el.classList.remove('glow-red');
         });
       });
