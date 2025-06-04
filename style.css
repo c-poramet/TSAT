@@ -392,9 +392,9 @@ body {
   height: 120px;
   position: relative;
   transform-style: preserve-3d;
-  transform: rotateX(-30deg) rotateY(-45deg);
+  transform: rotateX(-35.264deg) rotateY(-45deg);
   margin: 0;
-  perspective: 1200px;
+  perspective: 1600px;
   animation: none;
 }
 
@@ -402,27 +402,32 @@ body {
   position: absolute;
   width: 120px;
   height: 120px;
-  background-size: contain;
+  background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
   border: 3px solid #333;
   border-radius: 8px;
   backface-visibility: hidden;
+  box-sizing: content-box;
+}
+
+/* Front face styling is now handled above with the right face for consistency */
+
+.cube-face-3d.front,
+.cube-face-3d.right {
+  width: 120px;
+  height: 120px;
+  z-index: 2;
+  display: block;
 }
 
 .cube-face-3d.front {
   transform: rotateY(0deg) translateZ(60px);
-  z-index: 3;
-  opacity: 1;
-  display: block;
 }
 
 .cube-face-3d.right {
   transform: rotateY(90deg) translateZ(60px);
-  z-index: 2;
-  display: block;
-  border-color: #444 !important;
 }
 
 .cube-face-3d.top {
@@ -486,4 +491,18 @@ body {
 @keyframes float {
   0%, 100% { transform: rotateX(-25deg) rotateY(-40deg) translateZ(0); }
   50% { transform: rotateX(-20deg) rotateY(-50deg) translateZ(0); }
+}
+
+/* Fix for equal-sized faces with isometric view */
+.cube-3d {
+  /* Perfect isometric angle for X rotation is approximately 35.264 degrees */
+  transform: rotateX(-35.264deg) rotateY(-45deg);
+}
+
+/* Force exact size equality for cube faces */
+.cube-face-3d.front,
+.cube-face-3d.right {
+  transform-style: preserve-3d;
+  transform-origin: center center;
+  perspective: none;
 }
