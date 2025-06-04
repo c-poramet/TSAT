@@ -133,53 +133,45 @@ document.addEventListener('DOMContentLoaded', () => {
         this.selectRandomLayout();
         this.generateFacePatterns();
       }
-      
       // Clear the container
       container.innerHTML = '';
-      
       // Create the net container
       const netContainer = document.createElement('div');
       netContainer.className = 'net-container';
-      
-      // Determine grid dimensions
-      let maxX = 0;
-      let maxY = 0;
+      // Find min/max x/y to normalize positions
+      let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
       this.currentLayout.faces.forEach(facePos => {
+        minX = Math.min(minX, facePos.x);
+        minY = Math.min(minY, facePos.y);
         maxX = Math.max(maxX, facePos.x);
         maxY = Math.max(maxY, facePos.y);
       });
-      
-      // Set the grid size
-      netContainer.style.gridTemplateColumns = `repeat(${maxX + 1}, 1fr)`;
-      netContainer.style.gridTemplateRows = `repeat(${maxY + 1}, 1fr)`;
-      
+      // Calculate scaling for fixed container
+      const gridW = maxX - minX + 1;
+      const gridH = maxY - minY + 1;
+      const cellSize = 120; // match .cube-face width/height
+      const offsetX = (384 - cellSize * gridW) / 2;
+      const offsetY = (384 - cellSize * gridH) / 2;
       // Add faces to the grid
       this.currentLayout.faces.forEach(facePos => {
         const faceElement = document.createElement('div');
         faceElement.className = 'cube-face';
-        faceElement.style.gridColumn = facePos.x + 1;
-        faceElement.style.gridRow = facePos.y + 1;
-        
-        // Apply rotation
+        // Absolute positioning
+        faceElement.style.left = `${offsetX + (facePos.x - minX) * cellSize}px`;
+        faceElement.style.top = `${offsetY + (facePos.y - minY) * cellSize}px`;
+        faceElement.style.position = 'absolute';
         if (facePos.rotation) {
           faceElement.style.transform = `rotate(${facePos.rotation}deg)`;
         }
-        
         // Create the 3x3 grid for the face
         const facePattern = this.facePatterns[facePos.face];
         const faceGrid = document.createElement('div');
         faceGrid.className = 'face-grid';
-        
-        // Add cells to the grid
         for (let row = 0; row < 3; row++) {
           for (let col = 0; col < 3; col++) {
             const cell = document.createElement('div');
             cell.className = 'grid-cell';
-            
-            // Apply the pattern value
             const value = facePattern.grid[row][col];
-            
-            // Style based on pattern type
             switch(facePattern.type) {
               case 'colors':
                 cell.style.backgroundColor = value;
@@ -194,15 +186,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 cell.style.backgroundColor = '#222';
                 break;
             }
-            
             faceGrid.appendChild(cell);
           }
         }
-        
         faceElement.appendChild(faceGrid);
         netContainer.appendChild(faceElement);
       });
-      
       // Create a new net button
       const newNetBtn = document.createElement('button');
       newNetBtn.className = 'new-net-btn';
@@ -212,7 +201,6 @@ document.addEventListener('DOMContentLoaded', () => {
         this.generateFacePatterns();
         this.renderNet(container);
       });
-      
       // Append elements to the container
       container.appendChild(netContainer);
       container.appendChild(newNetBtn);
