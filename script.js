@@ -233,6 +233,50 @@ document.addEventListener('DOMContentLoaded', () => {
         { net: 5, cube: 'left', rotation: 180 },
       ];
 
+      // Define all 8 possible corner views for the cube
+      const cubeCornerViews = [
+        {
+          name: 'Top-Front-Right',
+          rotation: { x: -35.264, y: -45 },
+          faces: ['top', 'front', 'right']
+        },
+        {
+          name: 'Top-Front-Left',
+          rotation: { x: -35.264, y: 45 },
+          faces: ['top', 'front', 'left']
+        },
+        {
+          name: 'Top-Back-Right',
+          rotation: { x: -35.264, y: -135 },
+          faces: ['top', 'back', 'right']
+        },
+        {
+          name: 'Top-Back-Left',
+          rotation: { x: -35.264, y: 135 },
+          faces: ['top', 'back', 'left']
+        },
+        {
+          name: 'Bottom-Front-Right',
+          rotation: { x: 35.264, y: -45 },
+          faces: ['bottom', 'front', 'right']
+        },
+        {
+          name: 'Bottom-Front-Left',
+          rotation: { x: 35.264, y: 45 },
+          faces: ['bottom', 'front', 'left']
+        },
+        {
+          name: 'Bottom-Back-Right',
+          rotation: { x: 35.264, y: -135 },
+          faces: ['bottom', 'back', 'right']
+        },
+        {
+          name: 'Bottom-Back-Left',
+          rotation: { x: 35.264, y: 135 },
+          faces: ['bottom', 'back', 'left']
+        }
+      ];
+
       function renderCube3D(netLayout, facePatterns) {
         // Only support Type 1 for now
         if (netLayout.name !== 'Type 1') {
@@ -284,25 +328,72 @@ document.addEventListener('DOMContentLoaded', () => {
           ctx.restore();
           faceImages[cube] = out.toDataURL();
         });
+
+        // --- Randomize the view among 8 corners ---
+        let currentCorner = getRandomCubeCornerView();
+
         // Build the 3D cube
         const cubeDiv = document.getElementById('cube-container');
         cubeDiv.innerHTML = '';
+
+        // Add a button to randomize the view
+        const randomBtn = document.createElement('button');
+        randomBtn.textContent = 'Random View';
+        randomBtn.style.marginBottom = '10px';
+        randomBtn.style.background = '#333';
+        randomBtn.style.color = '#fff';
+        randomBtn.style.border = 'none';
+        randomBtn.style.borderRadius = '4px';
+        randomBtn.style.padding = '6px 16px';
+        randomBtn.style.cursor = 'pointer';
+        randomBtn.style.fontSize = '14px';
+        randomBtn.onmouseenter = () => randomBtn.style.background = '#444';
+        randomBtn.onmouseleave = () => randomBtn.style.background = '#333';
+        cubeDiv.appendChild(randomBtn);
+
+        // Add view label
+        const viewLabel = document.createElement('div');
+        viewLabel.textContent = `View: ${currentCorner.name}`;
+        viewLabel.style.textAlign = 'center';
+        viewLabel.style.color = '#888';
+        viewLabel.style.fontSize = '14px';
+        viewLabel.style.marginBottom = '10px';
+        cubeDiv.appendChild(viewLabel);
+
+        // Create the 3D cube
         const cube3d = document.createElement('div');
         cube3d.className = 'cube-3d';
-        // Show top, front, and right faces (looking down perspective)
-        const faces = [
-          { class: 'cube-face-3d front', img: faceImages.front },
-          { class: 'cube-face-3d right', img: faceImages.right },
-          { class: 'cube-face-3d top', img: faceImages.top },
-        ];
-        faces.forEach(f => {
+        cube3d.style.transform = `rotateX(${currentCorner.rotation.x}deg) rotateY(${currentCorner.rotation.y}deg)`;
+
+        // Add all 6 faces, but only show the 3 visible ones
+        ['front','back','left','right','top','bottom'].forEach(faceName => {
           const face = document.createElement('div');
-          face.className = f.class;
-          face.style.backgroundImage = `url('${f.img}')`;
+          face.className = `cube-face-3d ${faceName}`;
+          face.style.backgroundImage = `url('${faceImages[faceName]}')`;
+          face.style.opacity = currentCorner.faces.includes(faceName) ? '1' : '0';
           cube3d.appendChild(face);
         });
         cubeDiv.appendChild(cube3d);
+
+        // Handler to randomize the view
+        randomBtn.onclick = () => {
+          currentCorner = getRandomCubeCornerView();
+          cube3d.style.transform = `rotateX(${currentCorner.rotation.x}deg) rotateY(${currentCorner.rotation.y}deg)`;
+          viewLabel.textContent = `View: ${currentCorner.name}`;
+          // Update face visibility
+          cube3d.childNodes.forEach(face => {
+            const faceName = Array.from(face.classList).find(cls => ['front','back','left','right','top','bottom'].includes(cls));
+            face.style.opacity = currentCorner.faces.includes(faceName) ? '1' : '0';
+          });
+        };
       }
+
+      // Helper to get a random corner view
+      function getRandomCubeCornerView() {
+        const idx = Math.floor(Math.random() * cubeCornerViews.length);
+        return cubeCornerViews[idx];
+      }
+
       // After rendering the net, render the 3D cube
       renderCube3D(this.currentLayout, this.facePatterns);
     }
