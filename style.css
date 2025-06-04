@@ -102,9 +102,23 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  overflow: auto;
+  justify-content: center;
   min-height: 500px;
   width: 100%;
+  margin: 2rem 0;
+}
+
+.net-center-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 400px;
+  height: 400px;
+  max-width: 100vw;
+  max-height: 60vw;
+  position: relative;
+  background: none;
+  margin: 0 auto;
 }
 
 .layout-info {
@@ -125,7 +139,6 @@ body {
   justify-content: center;
   align-content: center;
   position: relative;
-  /* Center the grid in the parent */
   margin: 0 auto;
 }
 

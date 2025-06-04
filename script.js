@@ -208,7 +208,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // Initialize the generator and render the first net
-  const netContainer = document.querySelector('.net');
+  const netContainer = document.querySelector('.net-center-container');
   const cubeNetGenerator = new CubeNetGenerator(config);
   cubeNetGenerator.renderNet(netContainer);
   
