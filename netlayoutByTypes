@@ -1,0 +1,102 @@
+Type 2
+[
+  {face: 'left', x: 0, y: 0, rotation: 180},
+  {face: 'back', x: 1, y: 0, rotation: 180},
+  {face: 'top', x: 1, y: 1, rotation: 0},
+  {face: 'right', x: 2, y: 1, rotation: 90},
+  {face: 'front', x: 1, y: 2, rotation: 0},
+  {face: 'bottom', x: 1, y: 3, rotation: 0}
+]
+
+Type 3
+[
+  {face: 'left', x: 0, y: 0, rotation: 180},
+  {face: 'back', x: 1, y: 0, rotation: 180},
+  {face: 'top', x: 1, y: 1, rotation: 0},
+  {face: 'front', x: 1, y: 2, rotation: 0},
+  {face: 'right', x: 2, y: 2, rotation: 0},
+  {face: 'bottom', x: 1, y: 3, rotation: 0}
+]
+
+Type 4
+[
+  {face: 'left', x: 0, y: 0, rotation: 180},
+  {face: 'back', x: 1, y: 0, rotation: 180},
+  {face: 'top', x: 1, y: 1, rotation: 0},
+  {face: 'front', x: 1, y: 2, rotation: 0},
+  {face: 'bottom', x: 1, y: 3, rotation: 0},
+  {face: 'right', x: 2, y: 3, rotation: 270}
+]
+
+Type 5
+[
+  {face: 'back', x: 0, y: 0, rotation: 270},
+  {face: 'left', x: 0, y: 1, rotation: 270},
+  {face: 'top', x: 1, y: 1, rotation: 0},
+  {face: 'right', x: 2, y: 1, rotation: 90},
+  {face: 'front', x: 1, y: 2, rotation: 0},
+  {face: 'bottom', x: 1, y: 3, rotation: 0}
+]
+
+Type 6
+[
+  {face: 'back', x: 0, y: 0, rotation: 270},
+  {face: 'left', x: 0, y: 1, rotation: 270},
+  {face: 'top', x: 1, y: 1, rotation: 0},
+  {face: 'front', x: 1, y: 2, rotation: 0},
+  {face: 'right', x: 2, y: 2, rotation: 0},
+  {face: 'bottom', x: 1, y: 3, rotation: 0}
+]
+
+Type 7
+[
+  {face: 'back', x: 0, y: 0, rotation: 270},
+  {face: 'left', x: 0, y: 1, rotation: 270},
+  {face: 'top', x: 1, y: 1, rotation: 0},
+  {face: 'front', x: 1, y: 2, rotation: 0},
+  {face: 'bottom', x: 1, y: 3, rotation: 0},
+  {face: 'right', x: 2, y: 3, rotation: 270}
+]
+
+Type 8
+[
+  {face: 'back', x: 0, y: 0, rotation: 270},
+  {face: 'left', x: 0, y: 1, rotation: 270},
+  {face: 'top', x: 1, y: 1, rotation: 0},
+  {face: 'front', x: 1, y: 2, rotation: 0},
+  {face: 'right', x: 2, y: 2, rotation: 0},
+  {face: 'bottom', x: 2, y: 3, rotation: 90}
+]
+
+Type 9
+[
+  {face: 'back', x: 1, y: 0, rotation: 180},
+  {face: 'left', x: 0, y: 1, rotation: 270},
+  {face: 'top', x: 1, y: 1, rotation: 0},
+  {face: 'right', x: 2, y: 1, rotation: 90},
+  {face: 'front', x: 1, y: 2, rotation: 0},
+  {face: 'bottom', x: 1, y: 3, rotation: 0}
+]
+
+Type 10
+[
+  {face: 'back', x: 1, y: 0, rotation: 180},
+  {face: 'left', x: 0, y: 1, rotation: 270},
+  {face: 'top', x: 1, y: 1, rotation: 0},
+  {face: 'front', x: 1, y: 2, rotation: 0},
+  {face: 'right', x: 2, y: 2, rotation: 0},
+  {face: 'bottom', x: 1, y: 3, rotation: 0}
+]
+
+Type 11
+[
+  {face: 'bottom', x: 0, y: 0, rotation: 0},
+  {face: 'back', x: 0, y: 1, rotation: 180},
+  {face: 'top', x: 0, y: 2, rotation: 0},
+  {face: 'right', x: 1, y: 2, rotation: 90},
+  {face: 'front', x: 1, y: 3, rotation: 90},
+  {face: 'left', x: 1, y: 4, rotation: 90}
+]
+
+
+
