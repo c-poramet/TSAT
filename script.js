@@ -13,8 +13,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // Letter patterns (uppercase alphabet)
     letters: Array.from({length: 26}, (_, i) => String.fromCharCode(65 + i)),
     
-    // Number patterns (1-100)
-    numbers: Array.from({length: 100}, (_, i) => i + 1),
+    // Number patterns (1-99)
+    numbers: Array.from({length: 99}, (_, i) => i + 1),
     
     // 11 valid cube net layouts (from reference image)
     netLayouts: [
@@ -250,9 +250,14 @@ document.addEventListener('DOMContentLoaded', () => {
         netContainer.style.top = `calc(50% - ${(netPixelH * scale) / 2}px)`;
         netContainer.style.position = 'absolute';
       }, 0);
-      // Move the New Net button to the control panel
+      // Move the New Net button and others to the control panel
       const controlPanel = document.querySelector('.control-panel');
       controlPanel.innerHTML = '';
+      // Create CORRECT button
+      const correctBtn = document.createElement('button');
+      correctBtn.className = 'correct-btn';
+      correctBtn.textContent = 'CORRECT';
+      // Create New Net button
       const newNetBtn = document.createElement('button');
       newNetBtn.className = 'new-net-btn';
       newNetBtn.textContent = 'New Net';
@@ -261,7 +266,58 @@ document.addEventListener('DOMContentLoaded', () => {
         this.generateFacePatterns();
         this.renderNet(container);
       });
+      // Create INCORRECT button
+      const incorrectBtn = document.createElement('button');
+      incorrectBtn.className = 'incorrect-btn';
+      incorrectBtn.textContent = 'INCORRECT';
+      // Add all three buttons to the control panel
+      controlPanel.appendChild(correctBtn);
       controlPanel.appendChild(newNetBtn);
+      controlPanel.appendChild(incorrectBtn);
+
+      // --- Score logic ---
+      // Move score variable and updateScoreDisplay to top-level scope so it persists
+      if (typeof window.cubeScore === 'undefined') {
+        window.cubeScore = parseInt(localStorage.getItem('cubeScore') || '0', 10);
+      }
+      // Define window.isImpossible at the window level so it's accessible from anywhere
+      window.isImpossible = false;
+      
+      const scoreCircle = document.getElementById('score-circle');
+      function updateScoreDisplay() {
+        scoreCircle.textContent = window.cubeScore;
+      }
+      updateScoreDisplay();
+      function resetScore() {
+        window.cubeScore = 0;
+        localStorage.setItem('cubeScore', window.cubeScore);
+        updateScoreDisplay();
+      }
+      function addPoint() {
+        window.cubeScore += 1;
+        localStorage.setItem('cubeScore', window.cubeScore);
+        updateScoreDisplay();
+      }
+      // Button logic
+      correctBtn.onclick = () => {
+        if (window.isImpossible) {
+          resetScore();
+        } else {
+          addPoint();
+        }
+        // Always go to next problem
+        setTimeout(() => newNetBtn.click(), 0);
+      };
+      incorrectBtn.onclick = () => {
+        if (window.isImpossible) {
+          addPoint();
+        } else {
+          resetScore();
+        }
+        // Always go to next problem
+        setTimeout(() => newNetBtn.click(), 0);
+      };
+
       // Make sure the parent is relative for absolute centering
       container.style.position = 'relative';
       container.appendChild(netContainer);
@@ -366,6 +422,52 @@ document.addEventListener('DOMContentLoaded', () => {
           cubeDiv.innerHTML = '<div style="color:#888;text-align:center;padding:2rem;">3D folding not supported for this net layout.</div>';
           return;
         }
+
+        // --- Randomize the view among 8 corners ---
+        let currentCorner = getRandomCubeCornerView();
+
+        // Find the 3 visible faces in the net layout (before mapping)
+        // Map: cube face name -> net face index
+        const cubeToNet = {};
+        faceMap.forEach(({ net, cube }) => { cubeToNet[cube] = net; });
+        const visibleNetIndices = currentCorner.faces.map(cubeFace => cubeToNet[cubeFace]);
+
+        // 50-50 random chance to rotate one visible face in the net layout
+        window.isImpossible = false; // Make it globally accessible
+// Use window.isImpossible everywhere instead of local impossible
+        let rotatedNetIdx = -1;
+        let rotatedDeg = 0;
+        let rotationApplied = false;
+        let rotatedFacePattern = null;
+        if (Math.random() < 0.5) {
+          // Pick one of the 3 visible net faces at random
+          const idx = Math.floor(Math.random() * visibleNetIndices.length);
+          rotatedNetIdx = visibleNetIndices[idx];
+          rotatedFacePattern = facePatterns[rotatedNetIdx];
+          let allowedRotations = [90, 180, 270];
+          let skip = false;
+          if (rotatedFacePattern.type === 'letters') {
+            const val = rotatedFacePattern.value.toUpperCase();
+            if (["H","I","Z","N","S"].includes(val)) {
+              allowedRotations = [90];
+            } else if (["O"].includes(val)) {
+              skip = true;
+            } else if (["W","M"].includes(val)) {
+              allowedRotations = [90, 270];
+            }
+          } else if (rotatedFacePattern.type === 'numbers') {
+            const val = rotatedFacePattern.value.toString();
+            if (["69", "88","96"].includes(val)) {
+              skip = true;
+            }
+          }
+          if (!skip) {
+            rotatedDeg = allowedRotations[Math.floor(Math.random() * allowedRotations.length)];
+            window.isImpossible = true;
+            rotationApplied = true;
+          }
+        }
+
         // Prepare textures for each face
         const faceCanvases = [];
         for (let i = 0; i < 6; i++) {
@@ -377,6 +479,14 @@ document.addEventListener('DOMContentLoaded', () => {
           // Draw background
           ctx.fillStyle = '#222';
           ctx.fillRect(0, 0, 120, 120);
+          ctx.save();
+          // If this is the rotated net face, apply the rotation
+          if (rotationApplied && i === rotatedNetIdx) {
+  window.isImpossible = true;
+            ctx.translate(60, 60);
+            ctx.rotate((rotatedDeg * Math.PI) / 180);
+            ctx.translate(-60, -60);
+          }
           if (pattern.type === 'colors') {
             // 3x3 grid
             for (let row = 0; row < 3; row++) {
@@ -392,6 +502,7 @@ document.addEventListener('DOMContentLoaded', () => {
             ctx.textBaseline = 'middle';
             ctx.fillText(pattern.value, 60, 60);
           }
+          ctx.restore();
           faceCanvases.push(canvas);
         }
         // Map net faces to cube faces for this layout
@@ -410,36 +521,9 @@ document.addEventListener('DOMContentLoaded', () => {
           faceImages[cube] = out.toDataURL();
         });
 
-        // --- Randomize the view among 8 corners ---
-        let currentCorner = getRandomCubeCornerView();
-
         // Build the 3D cube
         const cubeDiv = document.getElementById('cube-container');
         cubeDiv.innerHTML = '';
-
-        // Add a button to randomize the view
-        const randomBtn = document.createElement('button');
-        randomBtn.textContent = 'Random View';
-        randomBtn.style.marginBottom = '10px';
-        randomBtn.style.background = '#333';
-        randomBtn.style.color = '#fff';
-        randomBtn.style.border = 'none';
-        randomBtn.style.borderRadius = '4px';
-        randomBtn.style.padding = '6px 16px';
-        randomBtn.style.cursor = 'pointer';
-        randomBtn.style.fontSize = '14px';
-        randomBtn.onmouseenter = () => randomBtn.style.background = '#444';
-        randomBtn.onmouseleave = () => randomBtn.style.background = '#333';
-        cubeDiv.appendChild(randomBtn);
-
-        // Add view label
-        const viewLabel = document.createElement('div');
-        viewLabel.textContent = `View: ${currentCorner.name}`;
-        viewLabel.style.textAlign = 'center';
-        viewLabel.style.color = '#888';
-        viewLabel.style.fontSize = '14px';
-        viewLabel.style.marginBottom = '10px';
-        cubeDiv.appendChild(viewLabel);
 
         // Create the 3D cube
         const cube3d = document.createElement('div');
@@ -457,16 +541,15 @@ document.addEventListener('DOMContentLoaded', () => {
         cubeDiv.appendChild(cube3d);
 
         // Handler to randomize the view
-        randomBtn.onclick = () => {
-          currentCorner = getRandomCubeCornerView();
-          cube3d.style.transform = `rotateX(${currentCorner.rotation.x}deg) rotateY(${currentCorner.rotation.y}deg)`;
-          viewLabel.textContent = `View: ${currentCorner.name}`;
-          // Update face visibility
-          cube3d.childNodes.forEach(face => {
-            const faceName = Array.from(face.classList).find(cls => ['front','back','left','right','top','bottom'].includes(cls));
-            face.style.opacity = currentCorner.faces.includes(faceName) ? '1' : '0';
-          });
-        };
+        // randomBtn.onclick = () => {
+        //   currentCorner = getRandomCubeCornerView();
+        //   cube3d.style.transform = `rotateX(${currentCorner.rotation.x}deg) rotateY(${currentCorner.rotation.y}deg)`;
+        //   // Update face visibility
+        //   cube3d.childNodes.forEach(face => {
+        //     const faceName = Array.from(face.classList).find(cls => ['front','back','left','right','top','bottom'].includes(cls));
+        //     face.style.opacity = currentCorner.faces.includes(faceName) ? '1' : '0';
+        //   });
+        // };
       }
 
       // Helper to get a random corner view
