@@ -280,6 +280,9 @@ document.addEventListener('DOMContentLoaded', () => {
       if (typeof window.cubeScore === 'undefined') {
         window.cubeScore = parseInt(localStorage.getItem('cubeScore') || '0', 10);
       }
+      // Define window.isImpossible at the window level so it's accessible from anywhere
+      window.isImpossible = false;
+      
       const scoreCircle = document.getElementById('score-circle');
       function updateScoreDisplay() {
         scoreCircle.textContent = window.cubeScore;
@@ -297,7 +300,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       // Button logic
       correctBtn.onclick = () => {
-        if (impossible) {
+        if (window.isImpossible) {
           resetScore();
         } else {
           addPoint();
@@ -306,7 +309,7 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => newNetBtn.click(), 0);
       };
       incorrectBtn.onclick = () => {
-        if (impossible) {
+        if (window.isImpossible) {
           addPoint();
         } else {
           resetScore();
@@ -430,7 +433,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const visibleNetIndices = currentCorner.faces.map(cubeFace => cubeToNet[cubeFace]);
 
         // 50-50 random chance to rotate one visible face in the net layout
-        let impossible = false;
+        window.isImpossible = false; // Make it globally accessible
+// Use window.isImpossible everywhere instead of local impossible
         let rotatedNetIdx = -1;
         let rotatedDeg = 0;
         let rotationApplied = false;
@@ -459,7 +463,7 @@ document.addEventListener('DOMContentLoaded', () => {
           }
           if (!skip) {
             rotatedDeg = allowedRotations[Math.floor(Math.random() * allowedRotations.length)];
-            impossible = true;
+            window.isImpossible = true;
             rotationApplied = true;
           }
         }
@@ -478,6 +482,7 @@ document.addEventListener('DOMContentLoaded', () => {
           ctx.save();
           // If this is the rotated net face, apply the rotation
           if (rotationApplied && i === rotatedNetIdx) {
+  window.isImpossible = true;
             ctx.translate(60, 60);
             ctx.rotate((rotatedDeg * Math.PI) / 180);
             ctx.translate(-60, -60);
@@ -521,7 +526,7 @@ document.addEventListener('DOMContentLoaded', () => {
         cubeDiv.innerHTML = '';
 
         // Show 'IMPOSSIBLE' if a rotation is applied
-        if (impossible) {
+        if (window.isImpossible) {
           const imp = document.createElement('div');
           imp.textContent = 'IMPOSSIBLE';
           imp.style.color = 'red';
