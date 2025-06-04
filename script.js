@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
     letters: Array.from({length: 26}, (_, i) => String.fromCharCode(65 + i)),
     
     // Number patterns (1-100)
-    numbers: Array.from({length: 100}, (_, i) => i + 1),
+    numbers: Array.from({length: 99}, (_, i) => i + 1),
     
     // 11 valid cube net layouts (from reference image)
     netLayouts: [
