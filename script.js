@@ -289,11 +289,11 @@ document.addEventListener('DOMContentLoaded', () => {
         cubeDiv.innerHTML = '';
         const cube3d = document.createElement('div');
         cube3d.className = 'cube-3d';
-        // Only show bottom, front, and right faces (looking up perspective)
+        // Show top, front, and right faces (looking down perspective)
         const faces = [
           { class: 'cube-face-3d front', img: faceImages.front },
           { class: 'cube-face-3d right', img: faceImages.right },
-          { class: 'cube-face-3d bottom', img: faceImages.bottom },
+          { class: 'cube-face-3d top', img: faceImages.top },
         ];
         faces.forEach(f => {
           const face = document.createElement('div');
