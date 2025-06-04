@@ -1,237 +1,410 @@
-// --- Cube Data Structure and Net Generation ---
-
-// Cube face indices: 0=+X, 1=-X, 2=+Y, 3=-Y, 4=+Z, 5=-Z
-// We'll use this order for all cube operations
-const FACE_LABELS = ['+X', '-X', '+Y', '-Y', '+Z', '-Z'];
-
-// 11 valid cube nets (as before)
-const cubeNets = [
-  [[1,0],[0,1],[1,1],[2,1],[3,1],[1,2]],
-  [[0,0],[1,0],[2,0],[1,1],[1,2],[1,3]],
-  [[0,1],[1,1],[2,1],[3,1],[2,0],[2,2]],
-  [[0,1],[1,1],[2,1],[2,0],[2,2],[3,1]],
-  [[1,0],[0,1],[1,1],[2,1],[1,2],[0,2]],
-  [[0,0],[1,0],[2,0],[2,1],[2,2],[3,2]],
-  [[0,1],[1,1],[2,1],[1,0],[1,2],[2,2]],
-  [[1,0],[0,1],[1,1],[2,1],[2,2],[3,2]],
-  [[0,1],[1,1],[2,1],[2,0],[3,0],[2,2]],
-  [[1,0],[0,1],[1,1],[2,1],[2,2],[3,1]],
-  [[0,1],[1,1],[2,1],[1,0],[2,0],[2,2]]
-];
-
-function randomInt(min, max) {
-  return Math.floor(Math.random() * (max - min + 1)) + min;
-}
-
-function shuffle(arr) {
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = randomInt(0, i);
-    [arr[i], arr[j]] = [arr[j], arr[i]];
-  }
-}
-
-// Generate a cube with random numbers on each face
-function generateCube() {
-  // Faces: [0=+X, 1=-X, 2=+Y, 3=-Y, 4=+Z, 5=-Z]
-  const faces = Array.from({length: 6}, () => randomInt(1, 100));
-  return { faces };
-}
-
-// For a given cube orientation, return the 3 visible faces in a standard isometric view
-function getVisibleFaces() {
-  // We'll use the +X, +Y, +Z faces as visible (indices 0, 2, 4)
-  return [0, 2, 4];
-}
-
-// Render the cube as SVG, showing the 3 visible faces
-function renderCubeSVG(cube) {
-  const faces = cube.faces;
-  const [fx, fy, fz] = getVisibleFaces();
-  const svg = `
-    <svg width="120" height="120" viewBox="0 0 120 120">
-      <polygon points="60,20 100,40 60,60 20,40" fill="#b5ead7" stroke="#888" stroke-width="2"/>
-      <text x="60" y="42" text-anchor="middle" font-size="20" fill="#23272e" font-family="Kanit">${faces[fz]}</text>
-      <polygon points="20,40 60,60 60,100 20,80" fill="#c7ceea" stroke="#888" stroke-width="2"/>
-      <text x="35" y="75" text-anchor="middle" font-size="20" fill="#23272e" font-family="Kanit">${faces[fx]}</text>
-      <polygon points="60,60 100,40 100,80 60,100" fill="#f7b7a3" stroke="#888" stroke-width="2"/>
-      <text x="85" y="75" text-anchor="middle" font-size="20" fill="#23272e" font-family="Kanit">${faces[fy]}</text>
-    </svg>
-    <div style="font-size:0.9em;color:#b0b0b0;margin-top:0.5em;">(showing faces +Z, +X, +Y)</div>
-  `;
-  document.getElementById('cube-visual').innerHTML = svg;
-}
-
-// Map cube faces to net faces (for a given net, pick a random mapping)
-function mapCubeToNet(cube, netIdx) {
-  // For simplicity, assign cube faces to net faces in a random order
-  const mapping = [0,1,2,3,4,5];
-  shuffle(mapping);
-  return mapping.map(i => cube.faces[i]);
-}
-
-// Render a net as SVG
-function renderNetSVG(net, faces, optionIdx) {
-  const xs = net.map(([x]) => x);
-  const ys = net.map(([,y]) => y);
-  const minX = Math.min(...xs);
-  const minY = Math.min(...ys);
-  const maxX = Math.max(...xs);
-  const maxY = Math.max(...ys);
-  const cellSize = 32;
-  // Calculate SVG size to fit the entire net
-  const width = (maxX-minX+1)*cellSize;
-  const height = (maxY-minY+1)*cellSize;
-  let svg = `<svg width="${width}" height="${height}">`;
-  
-  // Draw the net outline to help visualize connectivity
-  let outline = '';
-  net.forEach(([x, y], i) => {
-    const fx = (x-minX)*cellSize;
-    const fy = (y-minY)*cellSize;
-    outline += `<rect x="${fx}" y="${fy}" width="${cellSize}" height="${cellSize}" rx="6" 
-                 fill="#2c313a" stroke="#b5ead7" stroke-width="2"/>
-                <text x="${fx+cellSize/2}" y="${fy+cellSize/2+7}" 
-                 text-anchor="middle" font-size="18" fill="#f7b7a3" font-family="Kanit">${faces[i]}</text>`;
-  });
-  svg += outline;
-  return `<div class="net-option" data-option="${optionIdx}">${svg}</div>`;
-}
-
-// Generate false nets by swapping one visible face with a hidden face
-function generateFalseNets(correctFaces, net, visibleNetIndices) {
-  const falseNets = [];
-  for (let i = 0; i < 3; i++) {
-    // Copy correct faces
-    let faces = correctFaces.slice();
-    // Pick a visible face and a hidden face to swap
-    const vi = visibleNetIndices[i];
-    const hidden = [0,1,2,3,4,5].filter(idx => !visibleNetIndices.includes(idx));
-    const hi = hidden[randomInt(0, hidden.length-1)];
-    [faces[vi], faces[hi]] = [faces[hi], faces[vi]];
-    falseNets.push(faces);
-  }
-  return falseNets;
-}
-
-// Create an incorrect net arrangement that can't fold into a cube
-// by swapping two positions in the net
-function createInvalidNet(validNet) {
-  const newNet = JSON.parse(JSON.stringify(validNet)); // Deep copy
-  // Swap any two random positions to break the net structure
-  const i = randomInt(0, newNet.length - 1);
-  let j;
-  do {
-    j = randomInt(0, newNet.length - 1);
-  } while (j === i);
-  
-  [newNet[i], newNet[j]] = [newNet[j], newNet[i]];
-  return newNet;
-}
-
-function renderPuzzle() {
-  // 1. Generate cube
-  const cube = generateCube();
-  // 2. Render cube SVG
-  renderCubeSVG(cube);
-  // 3. Pick a random net for the correct answer
-  const correctNetIdx = randomInt(0, cubeNets.length-1);
-  const correctNet = cubeNets[correctNetIdx];
-  
-  // 4. Create the faces for the correct net
-  // We'll map in a way that visible faces (first three) match the cube
-  const visibleFaceIndices = getVisibleFaces(); // [0, 2, 4]
-  const correctFaces = Array(6).fill(0);
-  
-  // Map visible faces to first three net positions
-  correctFaces[0] = cube.faces[visibleFaceIndices[0]];
-  correctFaces[1] = cube.faces[visibleFaceIndices[1]];
-  correctFaces[2] = cube.faces[visibleFaceIndices[2]];
-  
-  // Fill remaining face positions with hidden faces
-  let hiddenFaceIdx = 0;
-  for (let i = 3; i < 6; i++) {
-    while (visibleFaceIndices.includes(hiddenFaceIdx)) {
-      hiddenFaceIdx++;
-    }
-    correctFaces[i] = cube.faces[hiddenFaceIdx];
-    hiddenFaceIdx++;
-  }
-  
-  // 5. Create three incorrect options
-  // Each one will be a different valid net but with the same face values
-  // OR same net shape but with swapped face values
-  const options = [
-    { net: correctNet, faces: correctFaces.slice(), correct: true }
-  ];
-  
-  // Track used net indices to avoid duplicates
-  const usedNetIndices = [correctNetIdx];
-  
-  while (options.length < 4) {
-    // Decide whether to use a different net shape or swap face values
-    const useDifferentNet = Math.random() > 0.5 || usedNetIndices.length >= cubeNets.length;
+// Cube Net Generator
+document.addEventListener('DOMContentLoaded', () => {
+  // Configuration for the cube patterns
+  const config = {
+    // Types of patterns we can apply to faces
+    patternTypes: ['colors', 'letters', 'numbers'],
     
-    if (useDifferentNet) {
-      // Use the same net, but swap two face values to make it incorrect
-      const faces = correctFaces.slice();
-      const i = randomInt(0, faces.length - 1);
-      let j;
-      do {
-        j = randomInt(0, faces.length - 1);
-      } while (j === i);
-      [faces[i], faces[j]] = [faces[j], faces[i]];
-      
-      options.push({
-        net: correctNet,
-        faces: faces,
-        correct: false
+    // Only primary and secondary colors
+    colors: [
+      'red', 'blue', 'yellow', 'green', 'orange', 'purple'
+    ],
+    
+    // Letter patterns (uppercase alphabet)
+    letters: Array.from({length: 26}, (_, i) => String.fromCharCode(65 + i)),
+    
+    // Number patterns (1-100)
+    numbers: Array.from({length: 100}, (_, i) => i + 1),
+    
+    // 11 valid cube net layouts (from reference image)
+    netLayouts: [
+      // Type 1
+      { name: 'Type 1', faces: [
+        {face:5,x:0,y:0}, {face:4,x:1,y:0}, {face:3,x:2,y:0}, {face:0,x:1,y:1}, {face:1,x:1,y:2}, {face:2,x:1,y:3}
+      ]},
+      // Type 2
+      { name: 'Type 2', faces: [
+        {face:0,x:0,y:0}, {face:1,x:1,y:0}, {face:2,x:1,y:1}, {face:3,x:2,y:1}, {face:4,x:1,y:2}, {face:5,x:1,y:3}
+      ]},
+      // Type 3
+      { name: 'Type 3', faces: [
+        {face:0,x:0,y:0}, {face:1,x:1,y:0}, {face:2,x:1,y:1}, {face:3,x:1,y:2}, {face:4,x:2,y:2}, {face:5,x:1,y:3}
+      ]},
+      // Type 4
+      { name: 'Type 4', faces: [
+        {face:0,x:0,y:0}, {face:1,x:1,y:0}, {face:2,x:1,y:1}, {face:3,x:1,y:2}, {face:4,x:1,y:3}, {face:5,x:2,y:3}
+      ]},
+      // Type 5
+      { name: 'Type 5', faces: [
+        {face:0,x:0,y:0}, {face:1,x:0,y:1}, {face:2,x:1,y:1}, {face:3,x:2,y:1}, {face:4,x:1,y:2}, {face:5,x:1,y:3}
+      ]},
+      // Type 6
+      { name: 'Type 6', faces: [
+        {face:0,x:0,y:0}, {face:1,x:0,y:1}, {face:2,x:1,y:1}, {face:3,x:1,y:2}, {face:4,x:2,y:2}, {face:5,x:1,y:3}
+      ]},
+      // Type 7
+      { name: 'Type 7', faces: [
+        {face:0,x:0,y:0}, {face:1,x:0,y:1}, {face:2,x:1,y:1}, {face:3,x:1,y:2}, {face:4,x:1,y:3}, {face:5,x:2,y:3}
+      ]},
+      // Type 8
+      { name: 'Type 8', faces: [
+        {face:0,x:0,y:0}, {face:1,x:0,y:1}, {face:2,x:1,y:1}, {face:3,x:1,y:2}, {face:4,x:2,y:2}, {face:5,x:2,y:3}
+      ]},
+      // Type 9
+      { name: 'Type 9', faces: [
+        {face:0,x:1,y:0}, {face:1,x:0,y:1}, {face:2,x:1,y:1}, {face:3,x:2,y:1}, {face:4,x:1,y:2}, {face:5,x:1,y:3}
+      ]},
+      // Type 10
+      { name: 'Type 10', faces: [
+        {face:0,x:1,y:0}, {face:1,x:0,y:1}, {face:2,x:1,y:1}, {face:3,x:1,y:2}, {face:4,x:2,y:2}, {face:5,x:1,y:3}
+      ]},
+      // Type 11
+      { name: 'Type 11', faces: [
+        {face:0,x:0,y:0}, {face:1,x:0,y:1}, {face:2,x:0,y:2}, {face:3,x:1,y:2}, {face:4,x:1,y:3}, {face:5,x:1,y:4}
+      ]}
+    ]
+  };
+
+  // Main generator class for cube nets
+  class CubeNetGenerator {
+    constructor(config) {
+      this.config = config;
+      this.currentLayout = null;
+      this.facePatterns = [];
+    }
+
+    // Generate a random pattern for each face
+    generateFacePatterns() {
+      this.facePatterns = [];
+      // Randomly select pattern types for each face
+      const selectedPatternTypes = [];
+      for (let i = 0; i < 6; i++) {
+        // Random pattern type selection
+        const patternType = this.config.patternTypes[Math.floor(Math.random() * this.config.patternTypes.length)];
+        selectedPatternTypes.push(patternType);
+      }
+      // Generate the pattern for each face based on its type
+      for (let i = 0; i < 6; i++) {
+        const patternType = selectedPatternTypes[i];
+        let facePattern;
+        if (patternType === 'colors') {
+          // 3x3 grid of random colors
+          facePattern = {
+            type: patternType,
+            grid: Array.from({ length: 3 }, () => Array.from({ length: 3 }, () => this.config.colors[Math.floor(Math.random() * this.config.colors.length)]))
+          };
+        } else if (patternType === 'letters') {
+          // Single random letter
+          facePattern = {
+            type: patternType,
+            value: this.config.letters[Math.floor(Math.random() * this.config.letters.length)]
+          };
+        } else if (patternType === 'numbers') {
+          // Single random number
+          facePattern = {
+            type: patternType,
+            value: this.config.numbers[Math.floor(Math.random() * this.config.numbers.length)]
+          };
+        }
+        this.facePatterns.push(facePattern);
+      }
+    }
+
+    // Select a random net layout
+    selectRandomLayout() {
+      const layoutIndex = Math.floor(Math.random() * this.config.netLayouts.length);
+      this.currentLayout = this.config.netLayouts[layoutIndex];
+      return this.currentLayout;
+    }
+
+    // Render the net to the DOM
+    renderNet(container) {
+      if (!this.currentLayout || this.facePatterns.length !== 6) {
+        this.selectRandomLayout();
+        this.generateFacePatterns();
+      }
+      // Clear the container
+      container.innerHTML = '';
+      // Find min/max x/y to normalize positions
+      let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+      this.currentLayout.faces.forEach(facePos => {
+        minX = Math.min(minX, facePos.x);
+        minY = Math.min(minY, facePos.y);
+        maxX = Math.max(maxX, facePos.x);
+        maxY = Math.max(maxY, facePos.y);
       });
-    } else {
-      // Use a different net shape (still valid, but not the same as correct one)
-      let newNetIdx;
-      do {
-        newNetIdx = randomInt(0, cubeNets.length - 1);
-      } while (usedNetIndices.includes(newNetIdx));
-      
-      usedNetIndices.push(newNetIdx);
-      options.push({
-        net: cubeNets[newNetIdx],
-        faces: correctFaces.slice(), // Same face values, different arrangement
-        correct: false
+      const gridW = maxX - minX + 1;
+      const gridH = maxY - minY + 1;
+      const cellSize = 120;
+      // Calculate the bounding box of the net
+      const netPixelW = gridW * cellSize;
+      const netPixelH = gridH * cellSize;
+      // Create the net container
+      const netContainer = document.createElement('div');
+      netContainer.className = 'net-container';
+      netContainer.style.width = netPixelW + 'px';
+      netContainer.style.height = netPixelH + 'px';
+      netContainer.style.position = 'relative';
+      netContainer.style.background = 'none';
+      // Add faces to the grid
+      this.currentLayout.faces.forEach(facePos => {
+        const faceElement = document.createElement('div');
+        faceElement.className = 'cube-face';
+        faceElement.style.left = `${(facePos.x - minX) * cellSize}px`;
+        faceElement.style.top = `${(facePos.y - minY) * cellSize}px`;
+        faceElement.style.position = 'absolute';
+        faceElement.style.width = cellSize + 'px';
+        faceElement.style.height = cellSize + 'px';
+        if (facePos.rotation) {
+          faceElement.style.transform = `rotate(${facePos.rotation}deg)`;
+        } else {
+          faceElement.style.transform = '';
+        }
+        // Render face content based on type
+        const facePattern = this.facePatterns[facePos.face];
+        if (facePattern.type === 'colors') {
+          // 3x3 grid of colors
+          const faceGrid = document.createElement('div');
+          faceGrid.className = 'face-grid';
+          for (let row = 0; row < 3; row++) {
+            for (let col = 0; col < 3; col++) {
+              const cell = document.createElement('div');
+              cell.className = 'grid-cell';
+              cell.style.backgroundColor = facePattern.grid[row][col];
+              cell.textContent = '';
+              faceGrid.appendChild(cell);
+            }
+          }
+          faceElement.appendChild(faceGrid);
+        } else if (facePattern.type === 'letters' || facePattern.type === 'numbers') {
+          // Single centered letter or number
+          const singleCell = document.createElement('div');
+          singleCell.className = 'grid-cell';
+          singleCell.style.width = '100%';
+          singleCell.style.height = '100%';
+          singleCell.style.fontSize = '3.5rem';
+          singleCell.style.backgroundColor = '#222';
+          singleCell.style.display = 'flex';
+          singleCell.style.alignItems = 'center';
+          singleCell.style.justifyContent = 'center';
+          singleCell.textContent = facePattern.value;
+          faceElement.appendChild(singleCell);
+        }
+        netContainer.appendChild(faceElement);
       });
+      // Responsive scaling: fit net-container to parent
+      setTimeout(() => {
+        const parent = container;
+        const parentW = parent.offsetWidth;
+        const parentH = parent.offsetHeight;
+        // Calculate scale to fit net-container inside parent
+        const scale = Math.min(parentW / netPixelW, parentH / netPixelH, 1);
+        netContainer.style.transform = `scale(${scale})`;
+        netContainer.style.transformOrigin = 'top left';
+        // Center the scaled net-container in parent
+        netContainer.style.left = `calc(50% - ${(netPixelW * scale) / 2}px)`;
+        netContainer.style.top = `calc(50% - ${(netPixelH * scale) / 2}px)`;
+        netContainer.style.position = 'absolute';
+      }, 0);
+      // Move the New Net button to the control panel
+      const controlPanel = document.querySelector('.control-panel');
+      controlPanel.innerHTML = '';
+      const newNetBtn = document.createElement('button');
+      newNetBtn.className = 'new-net-btn';
+      newNetBtn.textContent = 'New Net';
+      newNetBtn.addEventListener('click', () => {
+        this.selectRandomLayout();
+        this.generateFacePatterns();
+        this.renderNet(container);
+      });
+      controlPanel.appendChild(newNetBtn);
+      // Make sure the parent is relative for absolute centering
+      container.style.position = 'relative';
+      container.appendChild(netContainer);
+      // --- 3D Cube Rendering ---
+      // Mapping for Type 1 net layout (expandable for others)
+      const cubeFaceMap_Type1 = [
+        // netFaceIndex, cubeFace, rotation (deg)
+        { net: 0, cube: 'top', rotation: 0 },
+        { net: 1, cube: 'front', rotation: 0 },
+        { net: 2, cube: 'bottom', rotation: 0 },
+        { net: 3, cube: 'right', rotation: 180 },
+        { net: 4, cube: 'back', rotation: 180 },
+        { net: 5, cube: 'left', rotation: 180 },
+      ];
+
+      // Define all 8 possible corner views for the cube
+      const cubeCornerViews = [
+        {
+          name: 'Top-Front-Right',
+          rotation: { x: -35.264, y: -45 },
+          faces: ['top', 'front', 'right']
+        },
+        {
+          name: 'Top-Front-Left',
+          rotation: { x: -35.264, y: 45 },
+          faces: ['top', 'front', 'left']
+        },
+        {
+          name: 'Top-Back-Right',
+          rotation: { x: -35.264, y: -135 },
+          faces: ['top', 'back', 'right']
+        },
+        {
+          name: 'Top-Back-Left',
+          rotation: { x: -35.264, y: 135 },
+          faces: ['top', 'back', 'left']
+        },
+        {
+          name: 'Bottom-Front-Right',
+          rotation: { x: 35.264, y: -45 },
+          faces: ['bottom', 'front', 'right']
+        },
+        {
+          name: 'Bottom-Front-Left',
+          rotation: { x: 35.264, y: 45 },
+          faces: ['bottom', 'front', 'left']
+        },
+        {
+          name: 'Bottom-Back-Right',
+          rotation: { x: 35.264, y: -135 },
+          faces: ['bottom', 'back', 'right']
+        },
+        {
+          name: 'Bottom-Back-Left',
+          rotation: { x: 35.264, y: 135 },
+          faces: ['bottom', 'back', 'left']
+        }
+      ];
+
+      function renderCube3D(netLayout, facePatterns) {
+        // Only support Type 1 for now
+        if (netLayout.name !== 'Type 1') {
+          const cubeDiv = document.getElementById('cube-container');
+          cubeDiv.innerHTML = '<div style="color:#888;text-align:center;padding:2rem;">3D folding only supported for Type 1 net for now.</div>';
+          return;
+        }
+        // Prepare textures for each face
+        const faceCanvases = [];
+        for (let i = 0; i < 6; i++) {
+          const pattern = facePatterns[i];
+          const canvas = document.createElement('canvas');
+          canvas.width = 120;
+          canvas.height = 120;
+          const ctx = canvas.getContext('2d');
+          // Draw background
+          ctx.fillStyle = '#222';
+          ctx.fillRect(0, 0, 120, 120);
+          if (pattern.type === 'colors') {
+            // 3x3 grid
+            for (let row = 0; row < 3; row++) {
+              for (let col = 0; col < 3; col++) {
+                ctx.fillStyle = pattern.grid[row][col];
+                ctx.fillRect(col * 40 + 4, row * 40 + 4, 32, 32);
+              }
+            }
+          } else if (pattern.type === 'letters' || pattern.type === 'numbers') {
+            ctx.fillStyle = '#fff';
+            ctx.font = 'bold 72px Kanit, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(pattern.value, 60, 60);
+          }
+          faceCanvases.push(canvas);
+        }
+        // Map net faces to cube faces
+        const faceImages = {};
+        cubeFaceMap_Type1.forEach(({ net, cube, rotation }) => {
+          // Create a rotated canvas for each face
+          const src = faceCanvases[net];
+          const out = document.createElement('canvas');
+          out.width = 120;
+          out.height = 120;
+          const ctx = out.getContext('2d');
+          ctx.save();
+          ctx.translate(60, 60);
+          ctx.rotate((rotation * Math.PI) / 180);
+          ctx.drawImage(src, -60, -60);
+          ctx.restore();
+          faceImages[cube] = out.toDataURL();
+        });
+
+        // --- Randomize the view among 8 corners ---
+        let currentCorner = getRandomCubeCornerView();
+
+        // Build the 3D cube
+        const cubeDiv = document.getElementById('cube-container');
+        cubeDiv.innerHTML = '';
+
+        // Add a button to randomize the view
+        const randomBtn = document.createElement('button');
+        randomBtn.textContent = 'Random View';
+        randomBtn.style.marginBottom = '10px';
+        randomBtn.style.background = '#333';
+        randomBtn.style.color = '#fff';
+        randomBtn.style.border = 'none';
+        randomBtn.style.borderRadius = '4px';
+        randomBtn.style.padding = '6px 16px';
+        randomBtn.style.cursor = 'pointer';
+        randomBtn.style.fontSize = '14px';
+        randomBtn.onmouseenter = () => randomBtn.style.background = '#444';
+        randomBtn.onmouseleave = () => randomBtn.style.background = '#333';
+        cubeDiv.appendChild(randomBtn);
+
+        // Add view label
+        const viewLabel = document.createElement('div');
+        viewLabel.textContent = `View: ${currentCorner.name}`;
+        viewLabel.style.textAlign = 'center';
+        viewLabel.style.color = '#888';
+        viewLabel.style.fontSize = '14px';
+        viewLabel.style.marginBottom = '10px';
+        cubeDiv.appendChild(viewLabel);
+
+        // Create the 3D cube
+        const cube3d = document.createElement('div');
+        cube3d.className = 'cube-3d';
+        cube3d.style.transform = `rotateX(${currentCorner.rotation.x}deg) rotateY(${currentCorner.rotation.y}deg)`;
+
+        // Add all 6 faces, but only show the 3 visible ones
+        ['front','back','left','right','top','bottom'].forEach(faceName => {
+          const face = document.createElement('div');
+          face.className = `cube-face-3d ${faceName}`;
+          face.style.backgroundImage = `url('${faceImages[faceName]}')`;
+          face.style.opacity = currentCorner.faces.includes(faceName) ? '1' : '0';
+          cube3d.appendChild(face);
+        });
+        cubeDiv.appendChild(cube3d);
+
+        // Handler to randomize the view
+        randomBtn.onclick = () => {
+          currentCorner = getRandomCubeCornerView();
+          cube3d.style.transform = `rotateX(${currentCorner.rotation.x}deg) rotateY(${currentCorner.rotation.y}deg)`;
+          viewLabel.textContent = `View: ${currentCorner.name}`;
+          // Update face visibility
+          cube3d.childNodes.forEach(face => {
+            const faceName = Array.from(face.classList).find(cls => ['front','back','left','right','top','bottom'].includes(cls));
+            face.style.opacity = currentCorner.faces.includes(faceName) ? '1' : '0';
+          });
+        };
+      }
+
+      // Helper to get a random corner view
+      function getRandomCubeCornerView() {
+        const idx = Math.floor(Math.random() * cubeCornerViews.length);
+        return cubeCornerViews[idx];
+      }
+
+      // After rendering the net, render the 3D cube
+      renderCube3D(this.currentLayout, this.facePatterns);
     }
   }
-  
-  shuffle(options);
-  
-  const netOptionsList = document.getElementById('net-options-list');
-  netOptionsList.innerHTML = options.map((opt, idx) => renderNetSVG(opt.net, opt.faces, idx)).join('');
-  // Option selection
-  document.querySelectorAll('.net-option').forEach(el => {
-    el.onclick = () => {
-      document.querySelectorAll('.net-option').forEach(e => e.classList.remove('selected'));
-      el.classList.add('selected');
-    };
-  });
-  window.currentPuzzle = { options };
-  document.getElementById('feedback').textContent = '';
-  document.getElementById('next-btn').style.display = 'none';
-  document.getElementById('submit-btn').disabled = false;
-}
 
-function checkAnswer() {
-  const selected = document.querySelector('.net-option.selected');
-  if (!selected) {
-    document.getElementById('feedback').textContent = 'Please select a net.';
-    return;
-  }
-  const idx = parseInt(selected.getAttribute('data-option'));
-  const isCorrect = window.currentPuzzle.options[idx].correct;
-  document.getElementById('feedback').textContent = isCorrect ? 'Correct!' : 'Incorrect.';
-  document.getElementById('submit-btn').disabled = true;
-  document.getElementById('next-btn').style.display = 'inline-block';
-}
-
-document.getElementById('submit-btn').onclick = checkAnswer;
-document.getElementById('next-btn').onclick = renderPuzzle;
-document.addEventListener('DOMContentLoaded', renderPuzzle);
+  // Initialize the generator and render the first net
+  const netContainer = document.querySelector('.net-center-container');
+  const cubeNetGenerator = new CubeNetGenerator(config);
+  cubeNetGenerator.renderNet(netContainer);
+  
+  // Initialize the stats
+  const solves = document.querySelector('.stat-value');
+  solves.textContent = '0';
+});

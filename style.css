@@ -1,141 +1,508 @@
-/* Minimal dark theme with pastel palette */
-@import url('https://fonts.googleapis.com/css2?family=Kanit:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+/* Import Kanit font from Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600&display=swap');
 
-:root {
-  --bg: #23272e;
-  --panel: #2c313a;
-  --accent: #a3c9c7;
-  --pastel1: #f7b7a3;
-  --pastel2: #b5ead7;
-  --pastel3: #c7ceea;
-  --pastel4: #ffdac1;
-  --pastel5: #e2f0cb;
-  --text: #f8f8f2;
-  --muted: #b0b0b0;
+/* Reset and base styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Kanit', sans-serif;
+}
+
+html, body {
+  height: 100%;
+  min-height: 100vh;
+  width: 100vw;
+  margin: 0;
+  padding: 0;
 }
 
 body {
-  background: var(--bg);
-  color: var(--text);
-  font-family: 'Kanit', 'Segoe UI', 'Arial', sans-serif;
-  margin: 0;
+  background-color: #1a1a1a;
+  color: #f0f0f0;
+  line-height: 1.6;
   min-height: 100vh;
-}
-
-header, footer {
-  background: var(--panel);
-  padding: 1rem 2rem;
-  text-align: center;
-}
-
-h1 {
-  margin: 0 0 0.5rem 0;
-  font-size: 2rem;
-  color: var(--accent);
-}
-
-#instructions {
-  color: var(--muted);
-  font-size: 1.1rem;
-}
-
-.game-layout {
   display: flex;
-  justify-content: center;
-  align-items: flex-start;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.header {
+  display: none !important;
+}
+
+/* .header {
+  background-color: #252525;
+  padding: 2rem;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
   gap: 2rem;
-  padding: 2rem 1rem;
-  max-width: 1100px;
+  flex-shrink: 0;
+}
+
+.header-text {
+  flex: 1;
+  min-width: 300px;
+}
+
+.header-text h1 {
+  font-size: 2.5rem;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+  color: #fff;
+  letter-spacing: 1px;
+}
+
+.header-text p {
+  font-size: 1.1rem;
+  font-weight: 300;
+  color: #b0b0b0;
+}
+
+.header-stats {
+  display: flex;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+
+.stat-item {
+  text-align: center;
+  min-width: 100px;
+}
+
+.stat-value {
+  display: block;
+  font-size: 1.5rem;
+  font-weight: 500;
+  color: #fff;
+  margin-bottom: 0.25rem;
+}
+
+.stat-label {
+  display: block;
+  font-size: 0.9rem;
+  color: #b0b0b0;
+  font-weight: 300;
+} */
+
+/* Container styling */
+.container {
+  flex: 1 1 auto;
+  display: flex;
+  gap: 2rem;
+  max-width: 1200px;
   margin: 0 auto;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+  /* padding: 1rem; */
+  width: 100%;
+  min-height: 0;
+  box-sizing: border-box;
 }
 
-.cube-display, .net-options {
-  background: var(--panel);
-  border-radius: 1rem;
-  padding: 1.5rem 1rem;
-  min-width: 280px;
-  box-shadow: 0 2px 12px #0002;
+/* Problem and solving sections */
+.problem, .solving, .cube, .net {
+  background-color: #252525;
+  border-radius: 8px;
+  padding: 1.5rem;
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 0;
+  margin: 0;
+  box-sizing: border-box;
+  transition: transform 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
-.cube-display h2, .net-options h2 {
-  color: var(--pastel3);
-  font-size: 1.2rem;
-  margin-top: 0;
+.problem:hover, .solving:hover {
+  transform: translateY(-2px);
 }
 
-#cube-visual {
-  background: var(--bg);
-  border-radius: 0.7rem;
-  min-height: 180px;
+/* Cube Net specific styles */
+.net {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 0;
+  margin: 0;
+  box-sizing: border-box;
+}
+
+.net-center-container {
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-top: 1rem;
-  border: 2px dashed var(--pastel3);
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  max-height: 100%;
+  overflow: hidden;
+  position: relative;
+  /* Remove any transform-origin or scaling here, handled in JS */
 }
 
-#net-options-list {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.2rem;
-  margin-top: 1rem;
-}
-
-.net-option {
-  background: var(--bg);
-  border: 2px solid var(--pastel2);
-  border-radius: 0.7rem;
-  padding: 1rem;
-  cursor: pointer;
-  transition: border 0.2s, box-shadow 0.2s;
-  box-shadow: 0 1px 6px #0001;
+.layout-info {
+  color: #b0b0b0;
+  font-size: 1rem;
+  margin-bottom: 1rem;
   text-align: center;
 }
 
-.net-option.selected {
-  border: 2.5px solid var(--pastel1);
-  box-shadow: 0 0 0 2px var(--pastel1);
+.net-container {
+  position: relative;
+  display: block;
+  /* width/height will be set dynamically in JS to fit the net's bounding box */
+  background: none;
+  margin: 0;
+  /* Remove fixed width/height, let JS set it */
 }
 
-#controls {
-  margin: 1rem 0 0.5rem 0;
+/* Responsive scaling for .net-container */
+@media (min-width: 900px) {
+  .net-center-container {
+    width: 100%;
+    height: 100%;
+    max-width: 100%;
+    max-height: 100%;
+    position: relative;
+  }
+  .net-container {
+    /* scale down if parent is smaller than 384px */
+    max-width: 100%;
+    max-height: 100%;
+  }
 }
 
-button {
-  background: var(--pastel3);
-  color: var(--bg);
+@media (max-width: 900px) {
+  .net-center-container {
+    width: 100%;
+    height: 100%;
+    max-width: 100vw;
+    max-height: 50vw;
+    position: relative;
+  }
+  .net-container {
+    width: 240px;
+    height: 240px;
+    max-width: 100vw;
+    max-height: 50vw;
+  }
+}
+
+@media (max-width: 600px) {
+  .net-center-container {
+    width: 100%;
+    height: 100%;
+    max-width: 100vw;
+    max-height: 60vw;
+    position: relative;
+  }
+  .net-container {
+    width: 160px;
+    height: 160px;
+    max-width: 98vw;
+    max-height: 60vw;
+  }
+}
+
+.cube-face {
+  position: absolute;
+  width: 20vw;
+  height: 20vw;
+  max-width: 120px;
+  max-height: 120px;
+  min-width: 32px;
+  min-height: 32px;
+  box-sizing: border-box;
+  border: 2px dashed #444;
+  padding: 4px;
+  background-color: #1a1a1a;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  position: absolute;
+}
+
+.face-label, .face-type-label {
+  display: none;
+}
+
+.face-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  gap: 4px;
+  width: 100%;
+  height: 100%;
+}
+
+.grid-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #333;
+  color: white;
+  font-size: 2rem;
+  font-weight: 600;
+  border-radius: 4px;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  word-break: break-all;
+  aspect-ratio: 1 / 1;
+}
+
+.new-net-btn {
+  background-color: #356cb1;
+  color: white;
   border: none;
-  border-radius: 0.5rem;
-  padding: 0.6rem 1.4rem;
-  font-size: 1rem;
-  margin: 0 0.5rem;
+  padding: 0.8rem 2rem;
+  border-radius: 6px;
+  font-family: 'Kanit', sans-serif;
+  font-weight: 500;
+  font-size: 1.2rem;
   cursor: pointer;
-  transition: background 0.2s, color 0.2s;
-}
-button:hover, button:focus {
-  background: var(--pastel1);
-  color: var(--bg);
+  transition: background-color 0.2s ease;
+  /* margin-top: 2rem; */
 }
 
-#feedback {
-  min-height: 1.5em;
-  color: var(--pastel4);
-  font-size: 1.1rem;
-  margin-top: 0.5rem;
+.new-net-btn:hover {
+  background-color: #2a5699;
 }
 
-@media (max-width: 800px) {
-  .game-layout {
+/* Control panel styling */
+.control-panel {
+  width: 100vw;
+  max-width: 1200px;
+  margin: 0 auto 0 auto;
+  margin-bottom: 1rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1.5rem;
+  background: #232323;
+  border-radius: 8px;
+  min-height: 40px; /* Reduced from 80px */
+  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+  padding: 0.5rem 0; /* Reduced padding */
+  flex-shrink: 0;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #1a1a1a;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #404040;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #505050;
+}
+
+/* Make all cube faces visually even and balanced */
+.cube-face-3d {
+  border-radius: 8px;
+  border-width: 3px !important;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.35);
+  margin: 0;
+  padding: 0;
+}
+
+/* Force consistent dimensions and positioning for all cube faces */
+.cube-face-3d {
+  width: 120px !important;
+  height: 120px !important;
+  box-sizing: border-box !important;
+  background-size: 100% 100% !important;
+}
+
+/* Perfect cubic alignment */
+.cube-3d {
+  transform: rotateX(-30deg) rotateY(-30deg) translateZ(0);
+}
+
+/* Media queries for responsive net layout */
+@media (max-width: 900px) {
+  .container {
     flex-direction: column;
-    align-items: stretch;
     gap: 1rem;
-    padding: 1rem 0.5rem;
+    max-width: 100vw;
+    padding: 0.5rem;
   }
-  .cube-display, .net-options {
-    min-width: unset;
-    padding: 1rem 0.5rem;
+  .net-center-container {
+    max-width: 95vw;
+    max-height: 50vw;
   }
-  #net-options-list {
-    grid-template-columns: 1fr;
+  .net-container {
+    width: 240px;
+    height: 240px;
+    max-width: 95vw;
+    max-height: 40vh;
   }
+  .cube-face {
+    width: 18vw;
+    height: 18vw;
+    max-width: 80px;
+    max-height: 80px;
+  }
+}
+
+@media (max-width: 600px) {
+  .container {
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0.2rem;
+  }
+  .net-center-container {
+    max-width: 98vw;
+    max-height: 60vw;
+  }
+  .net-container {
+    width: 160px;
+    height: 160px;
+    max-width: 98vw;
+    max-height: 30vh;
+  }
+  .cube-face {
+    width: 14vw;
+    height: 14vw;
+    max-width: 48px;
+    max-height: 48px;
+  }
+}
+
+.cube-3d {
+  width: 120px;
+  height: 120px;
+  position: relative;
+  transform-style: preserve-3d;
+  transform: rotateX(-35.264deg) rotateY(-45deg);
+  margin: 0;
+  perspective: 1600px;
+  animation: none;
+}
+
+.cube-face-3d {
+  position: absolute;
+  width: 120px;
+  height: 120px;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+  border: 3px solid #333;
+  border-radius: 8px;
+  backface-visibility: hidden;
+  box-sizing: content-box;
+}
+
+/* Front face styling is now handled above with the right face for consistency */
+
+.cube-face-3d.front,
+.cube-face-3d.right {
+  width: 120px;
+  height: 120px;
+  z-index: 2;
+  display: block;
+}
+
+.cube-face-3d.front {
+  transform: rotateY(0deg) translateZ(60px);
+}
+
+.cube-face-3d.right {
+  transform: rotateY(90deg) translateZ(60px);
+}
+
+.cube-face-3d.top {
+  transform: rotateX(90deg) translateZ(60px);
+  z-index: 4;
+  display: block;
+}
+
+.cube-face-3d.bottom {
+  transform: rotateX(-90deg) translateZ(60px);
+  z-index: 0;
+  display: block;
+}
+
+/* Make sure all faces are displayed and aligned properly */
+.cube-face-3d.back {
+  transform: rotateY(180deg) translateZ(60px);
+  z-index: 1;
+  display: block;
+}
+
+.cube-face-3d.left {
+  transform: rotateY(-90deg) translateZ(60px);
+  z-index: 2;
+  display: block;
+}
+
+#cube-container {
+  width: 100%;
+  height: 100%;
+  min-height: 200px;
+  min-width: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+}
+
+/* Center the cube in its container */
+.cube {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+/* Make all cube-related containers better centered */
+#cube-container > div {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+/* Ensure individual cubes are centered in their wrappers */
+.cube-3d, .cube-3d-alt {
+  margin: 0 auto;
+}
+
+@keyframes float {
+  0%, 100% { transform: rotateX(-25deg) rotateY(-40deg) translateZ(0); }
+  50% { transform: rotateX(-20deg) rotateY(-50deg) translateZ(0); }
+}
+
+/* Fix for equal-sized faces with isometric view */
+.cube-3d {
+  /* Perfect isometric angle for X rotation is approximately 35.264 degrees */
+  transform: rotateX(-35.264deg) rotateY(-45deg);
+}
+
+/* Force exact size equality for cube faces */
+.cube-face-3d.front,
+.cube-face-3d.right {
+  transform-style: preserve-3d;
+  transform-origin: center center;
+  perspective: none;
 }

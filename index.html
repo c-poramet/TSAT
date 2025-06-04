@@ -3,37 +3,50 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cube Unfolding Puzzle</title>
+  <title>TGAT Cube Sport</title>
+
   <link rel="stylesheet" href="style.css">
+  <link rel="icon" href="favicon.ico" type="image/icon.ico">
 </head>
 <body>
-  <header>
-    <h1>Cube Unfolding Puzzle</h1>
-    <div id="instructions">
-      Select the correct cube net that folds into the shown cube.
+  <div class="header">
+    <div class="header-text">
+      <h1>TGAT Cube Sport</h1>
+      <p>Welcome to the TGAT Cube Sport page!</p>
     </div>
-  </header>
-  <main class="game-layout">
-    <section class="cube-display">
-      <h2>Target Cube</h2>
-      <div id="cube-visual">
-        <!-- 3D/2D cube visualization goes here -->
+    <div class="header-stats">
+      <div class="stat-item">
+        <span class="stat-value">0</span>
+        <span class="stat-label">Solves</span>
       </div>
-    </section>
-    <section class="net-options">
-      <h2>Choose the Net</h2>
-      <div id="net-options-list">
-        <!-- Unfolded net options will be rendered here -->
+      <div class="stat-item">
+        <span class="stat-value">--:--</span>
+        <span class="stat-label">Best Time</span>
       </div>
-    </section>
-  </main>
-  <footer>
-    <div id="controls">
-      <button id="submit-btn">Submit</button>
-      <button id="next-btn" style="display:none;">Next</button>
+      <div class="stat-item">
+        <span class="stat-value">--:--</span>
+        <span class="stat-label">Average</span>
+      </div>
     </div>
-    <div id="feedback"></div>
-  </footer>
+  </div>
+
+  <div class="container">
+    <div class="cube">
+      <h2>3D Cube Viewer</h2>
+      <div id="cube-container"></div>
+    </div>
+
+    <div class="net">
+      <div class="net-center-container">
+        <!-- Cube net will be generated here -->
+      </div>
+    </div>
+  </div>
+
+  <div class="control-panel">
+    <!-- Control panel for actions like New Net button -->
+  </div>
+
   <script src="script.js"></script>
 </body>
 </html>
