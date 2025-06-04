@@ -76,7 +76,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // Generate a random pattern for each face
     generateFacePatterns() {
       this.facePatterns = [];
-      
       // Randomly select pattern types for each face
       const selectedPatternTypes = [];
       for (let i = 0; i < 6; i++) {
@@ -84,38 +83,29 @@ document.addEventListener('DOMContentLoaded', () => {
         const patternType = this.config.patternTypes[Math.floor(Math.random() * this.config.patternTypes.length)];
         selectedPatternTypes.push(patternType);
       }
-      
       // Generate the pattern for each face based on its type
       for (let i = 0; i < 6; i++) {
         const patternType = selectedPatternTypes[i];
-        const facePattern = {
-          type: patternType,
-          grid: []
-        };
-        
-        // Fill 3x3 grid with random values based on pattern type
-        for (let row = 0; row < 3; row++) {
-          const gridRow = [];
-          for (let col = 0; col < 3; col++) {
-            let value;
-            
-            switch (patternType) {
-              case 'colors':
-                value = this.config.colors[Math.floor(Math.random() * this.config.colors.length)];
-                break;
-              case 'letters':
-                value = this.config.letters[Math.floor(Math.random() * this.config.letters.length)];
-                break;
-              case 'numbers':
-                value = this.config.numbers[Math.floor(Math.random() * this.config.numbers.length)];
-                break;
-            }
-            
-            gridRow.push(value);
-          }
-          facePattern.grid.push(gridRow);
+        let facePattern;
+        if (patternType === 'colors') {
+          // 3x3 grid of random colors
+          facePattern = {
+            type: patternType,
+            grid: Array.from({ length: 3 }, () => Array.from({ length: 3 }, () => this.config.colors[Math.floor(Math.random() * this.config.colors.length)]))
+          };
+        } else if (patternType === 'letters') {
+          // Single random letter
+          facePattern = {
+            type: patternType,
+            value: this.config.letters[Math.floor(Math.random() * this.config.letters.length)]
+          };
+        } else if (patternType === 'numbers') {
+          // Single random number
+          facePattern = {
+            type: patternType,
+            value: this.config.numbers[Math.floor(Math.random() * this.config.numbers.length)]
+          };
         }
-        
         this.facePatterns.push(facePattern);
       }
     }
@@ -170,33 +160,36 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
           faceElement.style.transform = '';
         }
-        // Create the 3x3 grid for the face
+        // Render face content based on type
         const facePattern = this.facePatterns[facePos.face];
-        const faceGrid = document.createElement('div');
-        faceGrid.className = 'face-grid';
-        for (let row = 0; row < 3; row++) {
-          for (let col = 0; col < 3; col++) {
-            const cell = document.createElement('div');
-            cell.className = 'grid-cell';
-            const value = facePattern.grid[row][col];
-            switch(facePattern.type) {
-              case 'colors':
-                cell.style.backgroundColor = value;
-                cell.textContent = '';
-                break;
-              case 'letters':
-                cell.textContent = value;
-                cell.style.backgroundColor = '#222';
-                break;
-              case 'numbers':
-                cell.textContent = value;
-                cell.style.backgroundColor = '#222';
-                break;
+        if (facePattern.type === 'colors') {
+          // 3x3 grid of colors
+          const faceGrid = document.createElement('div');
+          faceGrid.className = 'face-grid';
+          for (let row = 0; row < 3; row++) {
+            for (let col = 0; col < 3; col++) {
+              const cell = document.createElement('div');
+              cell.className = 'grid-cell';
+              cell.style.backgroundColor = facePattern.grid[row][col];
+              cell.textContent = '';
+              faceGrid.appendChild(cell);
             }
-            faceGrid.appendChild(cell);
           }
+          faceElement.appendChild(faceGrid);
+        } else if (facePattern.type === 'letters' || facePattern.type === 'numbers') {
+          // Single centered letter or number
+          const singleCell = document.createElement('div');
+          singleCell.className = 'grid-cell';
+          singleCell.style.width = '100%';
+          singleCell.style.height = '100%';
+          singleCell.style.fontSize = '3.5rem';
+          singleCell.style.backgroundColor = '#222';
+          singleCell.style.display = 'flex';
+          singleCell.style.alignItems = 'center';
+          singleCell.style.justifyContent = 'center';
+          singleCell.textContent = facePattern.value;
+          faceElement.appendChild(singleCell);
         }
-        faceElement.appendChild(faceGrid);
         netContainer.appendChild(faceElement);
       });
       // Responsive scaling: fit net-container to parent
