@@ -104,6 +104,15 @@
       return `${x},${y}`;
     }
 
+    function exportCoords() {
+      const coords = Array.from(selected)
+        .map(s => s.split(',').map(Number))
+        .sort((a, b) => a[1] - b[1] || a[0] - b[0])
+        .map(([x, y]) => `(${x},${y})`)
+        .join('\n');
+      output.value = coords;
+    }
+
     function renderGrid() {
       gridDiv.innerHTML = '';
       gridDiv.style.gridTemplateColumns = `repeat(${width}, 32px)`;
@@ -127,6 +136,7 @@
               selected.add(key);
               cell.classList.add('selected');
             }
+            exportCoords(); // Auto-export on click
           });
           gridDiv.appendChild(cell);
         }
@@ -148,15 +158,7 @@
       renderGrid();
       output.value = '';
     });
-    exportBtn.addEventListener('click', () => {
-      // Export as (x, y) pairs, one per line
-      const coords = Array.from(selected)
-        .map(s => s.split(',').map(Number))
-        .sort((a, b) => a[1] - b[1] || a[0] - b[0])
-        .map(([x, y]) => `(${x},${y})`)
-        .join('\n');
-      output.value = coords;
-    });
+    exportBtn.addEventListener('click', exportCoords);
 
     renderGrid();
   </script>

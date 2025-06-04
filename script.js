@@ -18,49 +18,49 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // 11 valid cube net layouts (from reference image)
     netLayouts: [
-      // 1
-      { name: 'Net 1', faces: [
-        {face:0,x:1,y:0},{face:1,x:1,y:1},{face:2,x:1,y:2},{face:3,x:0,y:1},{face:4,x:2,y:1},{face:5,x:3,y:1}
+      // Type 1
+      { name: 'Type 1', faces: [
+        {face:0,x:0,y:0}, {face:1,x:1,y:0}, {face:2,x:2,y:0}, {face:3,x:1,y:1}, {face:4,x:1,y:2}, {face:5,x:1,y:3}
       ]},
-      // 2
-      { name: 'Net 2', faces: [
-        {face:0,x:1,y:0},{face:1,x:1,y:1},{face:2,x:1,y:2},{face:3,x:0,y:2},{face:4,x:2,y:2},{face:5,x:2,y:3}
+      // Type 2
+      { name: 'Type 2', faces: [
+        {face:0,x:0,y:0}, {face:1,x:1,y:0}, {face:2,x:1,y:1}, {face:3,x:2,y:1}, {face:4,x:1,y:2}, {face:5,x:1,y:3}
       ]},
-      // 3
-      { name: 'Net 3', faces: [
-        {face:0,x:0,y:1},{face:1,x:1,y:1},{face:2,x:2,y:1},{face:3,x:2,y:0},{face:4,x:2,y:2},{face:5,x:3,y:2}
+      // Type 3
+      { name: 'Type 3', faces: [
+        {face:0,x:0,y:0}, {face:1,x:1,y:0}, {face:2,x:1,y:1}, {face:3,x:1,y:2}, {face:4,x:2,y:2}, {face:5,x:1,y:3}
       ]},
-      // 4
-      { name: 'Net 4', faces: [
-        {face:0,x:0,y:1},{face:1,x:1,y:1},{face:2,x:2,y:1},{face:3,x:2,y:0},{face:4,x:2,y:2},{face:5,x:3,y:1}
+      // Type 4
+      { name: 'Type 4', faces: [
+        {face:0,x:0,y:0}, {face:1,x:1,y:0}, {face:2,x:1,y:1}, {face:3,x:1,y:2}, {face:4,x:1,y:3}, {face:5,x:2,y:3}
       ]},
-      // 5
-      { name: 'Net 5', faces: [
-        {face:0,x:1,y:0},{face:1,x:1,y:1},{face:2,x:1,y:2},{face:3,x:0,y:2},{face:4,x:2,y:2},{face:5,x:0,y:3}
+      // Type 5
+      { name: 'Type 5', faces: [
+        {face:0,x:0,y:0}, {face:1,x:0,y:1}, {face:2,x:1,y:1}, {face:3,x:2,y:1}, {face:4,x:1,y:2}, {face:5,x:1,y:3}
       ]},
-      // 6
-      { name: 'Net 6', faces: [
-        {face:0,x:1,y:0},{face:1,x:1,y:1},{face:2,x:1,y:2},{face:3,x:0,y:2},{face:4,x:2,y:2},{face:5,x:2,y:3}
+      // Type 6
+      { name: 'Type 6', faces: [
+        {face:0,x:0,y:0}, {face:1,x:0,y:1}, {face:2,x:1,y:1}, {face:3,x:1,y:2}, {face:4,x:2,y:2}, {face:5,x:1,y:3}
       ]},
-      // 7
-      { name: 'Net 7', faces: [
-        {face:0,x:1,y:0},{face:1,x:1,y:1},{face:2,x:1,y:2},{face:3,x:0,y:1},{face:4,x:2,y:1},{face:5,x:2,y:2}
+      // Type 7
+      { name: 'Type 7', faces: [
+        {face:0,x:0,y:0}, {face:1,x:0,y:1}, {face:2,x:1,y:1}, {face:3,x:1,y:2}, {face:4,x:1,y:3}, {face:5,x:2,y:3}
       ]},
-      // 8
-      { name: 'Net 8', faces: [
-        {face:0,x:1,y:0},{face:1,x:1,y:1},{face:2,x:1,y:2},{face:3,x:0,y:1},{face:4,x:2,y:1},{face:5,x:0,y:2}
+      // Type 8
+      { name: 'Type 8', faces: [
+        {face:0,x:0,y:0}, {face:1,x:0,y:1}, {face:2,x:1,y:1}, {face:3,x:1,y:2}, {face:4,x:2,y:2}, {face:5,x:2,y:3}
       ]},
-      // 9
-      { name: 'Net 9', faces: [
-        {face:0,x:1,y:0},{face:1,x:1,y:1},{face:2,x:1,y:2},{face:3,x:0,y:1},{face:4,x:2,y:1},{face:5,x:1,y:3}
+      // Type 9
+      { name: 'Type 9', faces: [
+        {face:0,x:1,y:0}, {face:1,x:0,y:1}, {face:2,x:1,y:1}, {face:3,x:2,y:1}, {face:4,x:1,y:2}, {face:5,x:1,y:3}
       ]},
-      // 10
-      { name: 'Net 10', faces: [
-        {face:0,x:1,y:0},{face:1,x:1,y:1},{face:2,x:1,y:2},{face:3,x:0,y:1},{face:4,x:2,y:1},{face:5,x:2,y:0}
+      // Type 10
+      { name: 'Type 10', faces: [
+        {face:0,x:1,y:0}, {face:1,x:0,y:1}, {face:2,x:1,y:1}, {face:3,x:1,y:2}, {face:4,x:2,y:2}, {face:5,x:1,y:3}
       ]},
-      // 11
-      { name: 'Net 11', faces: [
-        {face:0,x:1,y:0},{face:1,x:1,y:1},{face:2,x:1,y:2},{face:3,x:0,y:1},{face:4,x:2,y:1},{face:5,x:0,y:0}
+      // Type 11
+      { name: 'Type 11', faces: [
+        {face:0,x:0,y:0}, {face:1,x:0,y:1}, {face:2,x:0,y:2}, {face:3,x:1,y:2}, {face:4,x:1,y:3}, {face:5,x:1,y:4}
       ]}
     ]
   };
