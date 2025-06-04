@@ -194,6 +194,7 @@ document.addEventListener('DOMContentLoaded', () => {
       this.currentLayout.faces.forEach(facePos => {
         const faceElement = document.createElement('div');
         faceElement.className = 'cube-face';
+        faceElement.dataset.faceIndex = facePos.face; // Store the face index as data attribute
         faceElement.style.left = `${(facePos.x - minX) * cellSize}px`;
         faceElement.style.top = `${(facePos.y - minY) * cellSize}px`;
         faceElement.style.position = 'absolute';
@@ -322,20 +323,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
       // Helper to highlight the rotated face and pause UI
       function highlightRotatedFaceAndPause() {
+        // Reset score when incorrect
+        resetScore();
+        
         // Disable and gray out buttons
         correctBtn.disabled = true;
         incorrectBtn.disabled = true;
         correctBtn.style.opacity = '0.5';
         incorrectBtn.style.opacity = '0.5';
-        // Only highlight if a face was rotated
+        
+        // Only highlight if a face was rotated (impossible case)
         if (window.isImpossible && typeof window.rotatedNetIdx === 'number' && window.rotatedNetIdx >= 0) {
-          // Find all net face elements
-          const netFaces = document.querySelectorAll('.net-container .cube-face');
-          // The order of .cube-face matches the order of this.currentLayout.faces
-          const highlightIdx = window.rotatedNetIdx;
-          // Defensive: check if exists
-          if (netFaces[highlightIdx]) {
-            netFaces[highlightIdx].classList.add('glow-red');
+          // Find the face element that has the data-face-index attribute matching rotatedNetIdx
+          const highlightFace = document.querySelector(`.cube-face[data-face-index="${window.rotatedNetIdx}"]`);
+          
+          if (highlightFace) {
+            highlightFace.classList.add('glow-red');
           }
         }
       }
@@ -497,6 +500,7 @@ document.addEventListener('DOMContentLoaded', () => {
           if (!skip) {
             rotatedDeg = allowedRotations[Math.floor(Math.random() * allowedRotations.length)];
             window.isImpossible = true;
+            window.rotatedNetIdx = rotatedNetIdx; // Store for later
             rotationApplied = true;
           }
         }
