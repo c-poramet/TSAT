@@ -135,9 +135,6 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       // Clear the container
       container.innerHTML = '';
-      // Create the net container
-      const netContainer = document.createElement('div');
-      netContainer.className = 'net-container';
       // Find min/max x/y to normalize positions
       let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
       this.currentLayout.faces.forEach(facePos => {
@@ -152,18 +149,26 @@ document.addEventListener('DOMContentLoaded', () => {
       // Calculate the bounding box of the net
       const netPixelW = gridW * cellSize;
       const netPixelH = gridH * cellSize;
-      // Center the net in the fixed-size net-container
-      const offsetX = (netPixelW < 384) ? (384 - netPixelW) / 2 : 0;
-      const offsetY = (netPixelH < 384) ? (384 - netPixelH) / 2 : 0;
+      // Create the net container
+      const netContainer = document.createElement('div');
+      netContainer.className = 'net-container';
+      netContainer.style.width = netPixelW + 'px';
+      netContainer.style.height = netPixelH + 'px';
+      netContainer.style.position = 'relative';
+      netContainer.style.background = 'none';
       // Add faces to the grid
       this.currentLayout.faces.forEach(facePos => {
         const faceElement = document.createElement('div');
         faceElement.className = 'cube-face';
-        faceElement.style.left = `${offsetX + (facePos.x - minX) * cellSize}px`;
-        faceElement.style.top = `${offsetY + (facePos.y - minY) * cellSize}px`;
+        faceElement.style.left = `${(facePos.x - minX) * cellSize}px`;
+        faceElement.style.top = `${(facePos.y - minY) * cellSize}px`;
         faceElement.style.position = 'absolute';
+        faceElement.style.width = cellSize + 'px';
+        faceElement.style.height = cellSize + 'px';
         if (facePos.rotation) {
           faceElement.style.transform = `rotate(${facePos.rotation}deg)`;
+        } else {
+          faceElement.style.transform = '';
         }
         // Create the 3x3 grid for the face
         const facePattern = this.facePatterns[facePos.face];
@@ -199,15 +204,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const parent = container;
         const parentW = parent.offsetWidth;
         const parentH = parent.offsetHeight;
-        // The net is always 384x384px, but the actual net may be smaller
-        // so we want to scale the net-container to fit inside the parent
-        const scale = Math.min(parentW / Math.max(netPixelW, 1), parentH / Math.max(netPixelH, 1), 1);
+        // Calculate scale to fit net-container inside parent
+        const scale = Math.min(parentW / netPixelW, parentH / netPixelH, 1);
         netContainer.style.transform = `scale(${scale})`;
         netContainer.style.transformOrigin = 'top left';
-        // Center the scaled net
-        netContainer.style.position = 'absolute';
+        // Center the scaled net-container in parent
         netContainer.style.left = `calc(50% - ${(netPixelW * scale) / 2}px)`;
         netContainer.style.top = `calc(50% - ${(netPixelH * scale) / 2}px)`;
+        netContainer.style.position = 'absolute';
       }, 0);
       // Move the New Net button to the control panel
       const controlPanel = document.querySelector('.control-panel');

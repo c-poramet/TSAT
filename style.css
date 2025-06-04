@@ -141,8 +141,9 @@ body {
   height: 100%;
   max-width: 100%;
   max-height: 100%;
-  overflow: visible;
+  overflow: hidden;
   position: relative;
+  /* Remove any transform-origin or scaling here, handled in JS */
 }
 
 .layout-info {
@@ -153,17 +154,12 @@ body {
 }
 
 .net-container {
-  display: grid;
-  gap: 8px;
-  width: 384px;
-  height: 384px;
-  background: none;
-  justify-content: center;
-  align-content: center;
   position: relative;
-  margin: 0 auto;
-  /* Responsive scaling */
-  transform-origin: top left;
+  display: block;
+  /* width/height will be set dynamically in JS to fit the net's bounding box */
+  background: none;
+  margin: 0;
+  /* Remove fixed width/height, let JS set it */
 }
 
 /* Responsive scaling for .net-container */
@@ -215,6 +211,7 @@ body {
 }
 
 .cube-face {
+  position: absolute;
   width: 20vw;
   height: 20vw;
   max-width: 120px;
