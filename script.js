@@ -250,9 +250,15 @@ document.addEventListener('DOMContentLoaded', () => {
         netContainer.style.top = `calc(50% - ${(netPixelH * scale) / 2}px)`;
         netContainer.style.position = 'absolute';
       }, 0);
-      // Move the New Net button to the control panel
+      // Move the New Net button and others to the control panel
       const controlPanel = document.querySelector('.control-panel');
       controlPanel.innerHTML = '';
+      // Create CORRECT button
+      const correctBtn = document.createElement('button');
+      correctBtn.className = 'correct-btn';
+      correctBtn.textContent = 'CORRECT';
+      // (Add your event handler here if needed)
+      // Create New Net button
       const newNetBtn = document.createElement('button');
       newNetBtn.className = 'new-net-btn';
       newNetBtn.textContent = 'New Net';
@@ -261,7 +267,15 @@ document.addEventListener('DOMContentLoaded', () => {
         this.generateFacePatterns();
         this.renderNet(container);
       });
+      // Create INCORRECT button
+      const incorrectBtn = document.createElement('button');
+      incorrectBtn.className = 'incorrect-btn';
+      incorrectBtn.textContent = 'INCORRECT';
+      // (Add your event handler here if needed)
+      // Add all three buttons to the control panel
+      controlPanel.appendChild(correctBtn);
       controlPanel.appendChild(newNetBtn);
+      controlPanel.appendChild(incorrectBtn);
       // Make sure the parent is relative for absolute centering
       container.style.position = 'relative';
       container.appendChild(netContainer);
