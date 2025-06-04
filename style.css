@@ -399,10 +399,15 @@ body {
   z-index: 1;
 }
 
+.cube-face-3d.bottom {
+  transform: rotateX(-90deg) translateZ(60px);
+  z-index: 0;
+  display: block;
+}
+
 /* Hide the other faces for now */
 .cube-face-3d.back,
-.cube-face-3d.left,
-.cube-face-3d.bottom {
+.cube-face-3d.left {
   display: none;
 }
 
