@@ -417,30 +417,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const cubeDiv = document.getElementById('cube-container');
         cubeDiv.innerHTML = '';
 
-        // Add a button to randomize the view
-        const randomBtn = document.createElement('button');
-        randomBtn.textContent = 'Random View';
-        randomBtn.style.marginBottom = '10px';
-        randomBtn.style.background = '#333';
-        randomBtn.style.color = '#fff';
-        randomBtn.style.border = 'none';
-        randomBtn.style.borderRadius = '4px';
-        randomBtn.style.padding = '6px 16px';
-        randomBtn.style.cursor = 'pointer';
-        randomBtn.style.fontSize = '14px';
-        randomBtn.onmouseenter = () => randomBtn.style.background = '#444';
-        randomBtn.onmouseleave = () => randomBtn.style.background = '#333';
-        cubeDiv.appendChild(randomBtn);
-
-        // Add view label
-        const viewLabel = document.createElement('div');
-        viewLabel.textContent = `View: ${currentCorner.name}`;
-        viewLabel.style.textAlign = 'center';
-        viewLabel.style.color = '#888';
-        viewLabel.style.fontSize = '14px';
-        viewLabel.style.marginBottom = '10px';
-        cubeDiv.appendChild(viewLabel);
-
         // Create the 3D cube
         const cube3d = document.createElement('div');
         cube3d.className = 'cube-3d';
@@ -460,7 +436,6 @@ document.addEventListener('DOMContentLoaded', () => {
         randomBtn.onclick = () => {
           currentCorner = getRandomCubeCornerView();
           cube3d.style.transform = `rotateX(${currentCorner.rotation.x}deg) rotateY(${currentCorner.rotation.y}deg)`;
-          viewLabel.textContent = `View: ${currentCorner.name}`;
           // Update face visibility
           cube3d.childNodes.forEach(face => {
             const faceName = Array.from(face.classList).find(cls => ['front','back','left','right','top','bottom'].includes(cls));
