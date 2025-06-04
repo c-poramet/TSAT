@@ -525,18 +525,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const cubeDiv = document.getElementById('cube-container');
         cubeDiv.innerHTML = '';
 
-        // Show 'IMPOSSIBLE' if a rotation is applied
-        if (window.isImpossible) {
-          const imp = document.createElement('div');
-          imp.textContent = 'IMPOSSIBLE';
-          imp.style.color = 'red';
-          imp.style.fontWeight = 'bold';
-          imp.style.fontSize = '1.2rem';
-          imp.style.textAlign = 'center';
-          imp.style.marginBottom = '8px';
-          cubeDiv.appendChild(imp);
-        }
-
         // Create the 3D cube
         const cube3d = document.createElement('div');
         cube3d.className = 'cube-3d';
