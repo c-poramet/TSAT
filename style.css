@@ -367,7 +367,7 @@ body {
   height: 120px;
   position: relative;
   transform-style: preserve-3d;
-  transform: rotateX(45deg) rotateY(-45deg) translateZ(0);
+  transform: rotateX(-30deg) rotateY(-45deg) translateZ(0);
   margin: 0;
   perspective: 600px;
 }
@@ -402,13 +402,13 @@ body {
 .cube-face-3d.bottom {
   transform: rotateX(-90deg) translateZ(60px);
   z-index: 0;
-  display: none; /* Hide bottom face */
+  display: block; /* Show bottom face */
 }
 
 /* Hide the other faces for now */
 .cube-face-3d.back,
 .cube-face-3d.left,
-.cube-face-3d.bottom {
+.cube-face-3d.top {
   display: none;
 }
 
