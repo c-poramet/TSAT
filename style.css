@@ -206,6 +206,26 @@ body {
   background-color: #2a5699;
 }
 
+/* Control panel styling */
+.control-panel {
+  width: 100%;
+  max-width: 1200px;
+  margin: 2rem auto 0 auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1.5rem;
+  background: #232323;
+  border-radius: 8px;
+  min-height: 80px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+  padding: 1.5rem 0;
+}
+
+.control-panel .new-net-btn {
+  margin: 0;
+}
+
 /* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 8px;

@@ -192,7 +192,10 @@ document.addEventListener('DOMContentLoaded', () => {
         faceElement.appendChild(faceGrid);
         netContainer.appendChild(faceElement);
       });
-      // Create a new net button
+      container.appendChild(netContainer);
+      // Move the New Net button to the control panel
+      const controlPanel = document.querySelector('.control-panel');
+      controlPanel.innerHTML = '';
       const newNetBtn = document.createElement('button');
       newNetBtn.className = 'new-net-btn';
       newNetBtn.textContent = 'New Net';
@@ -201,9 +204,7 @@ document.addEventListener('DOMContentLoaded', () => {
         this.generateFacePatterns();
         this.renderNet(container);
       });
-      // Append elements to the container
-      container.appendChild(netContainer);
-      container.appendChild(newNetBtn);
+      controlPanel.appendChild(newNetBtn);
     }
   }
 
