@@ -366,6 +366,51 @@ document.addEventListener('DOMContentLoaded', () => {
           cubeDiv.innerHTML = '<div style="color:#888;text-align:center;padding:2rem;">3D folding not supported for this net layout.</div>';
           return;
         }
+
+        // --- Randomize the view among 8 corners ---
+        let currentCorner = getRandomCubeCornerView();
+
+        // Find the 3 visible faces in the net layout (before mapping)
+        // Map: cube face name -> net face index
+        const cubeToNet = {};
+        faceMap.forEach(({ net, cube }) => { cubeToNet[cube] = net; });
+        const visibleNetIndices = currentCorner.faces.map(cubeFace => cubeToNet[cubeFace]);
+
+        // 50-50 random chance to rotate one visible face in the net layout
+        let impossible = false;
+        let rotatedNetIdx = -1;
+        let rotatedDeg = 0;
+        let rotationApplied = false;
+        let rotatedFacePattern = null;
+        if (Math.random() < 0.5) {
+          // Pick one of the 3 visible net faces at random
+          const idx = Math.floor(Math.random() * visibleNetIndices.length);
+          rotatedNetIdx = visibleNetIndices[idx];
+          rotatedFacePattern = facePatterns[rotatedNetIdx];
+          let allowedRotations = [90, 180, 270];
+          let skip = false;
+          if (rotatedFacePattern.type === 'letters') {
+            const val = rotatedFacePattern.value.toUpperCase();
+            if (["H","I","Z","N","S"].includes(val)) {
+              allowedRotations = [90];
+            } else if (["O"].includes(val)) {
+              skip = true;
+            } else if (["W","M"].includes(val)) {
+              allowedRotations = [90, 270];
+            }
+          } else if (rotatedFacePattern.type === 'numbers') {
+            const val = rotatedFacePattern.value.toString();
+            if (["69","96"].includes(val)) {
+              skip = true;
+            }
+          }
+          if (!skip) {
+            rotatedDeg = allowedRotations[Math.floor(Math.random() * allowedRotations.length)];
+            impossible = true;
+            rotationApplied = true;
+          }
+        }
+
         // Prepare textures for each face
         const faceCanvases = [];
         for (let i = 0; i < 6; i++) {
@@ -377,6 +422,13 @@ document.addEventListener('DOMContentLoaded', () => {
           // Draw background
           ctx.fillStyle = '#222';
           ctx.fillRect(0, 0, 120, 120);
+          ctx.save();
+          // If this is the rotated net face, apply the rotation
+          if (rotationApplied && i === rotatedNetIdx) {
+            ctx.translate(60, 60);
+            ctx.rotate((rotatedDeg * Math.PI) / 180);
+            ctx.translate(-60, -60);
+          }
           if (pattern.type === 'colors') {
             // 3x3 grid
             for (let row = 0; row < 3; row++) {
@@ -392,6 +444,7 @@ document.addEventListener('DOMContentLoaded', () => {
             ctx.textBaseline = 'middle';
             ctx.fillText(pattern.value, 60, 60);
           }
+          ctx.restore();
           faceCanvases.push(canvas);
         }
         // Map net faces to cube faces for this layout
@@ -410,12 +463,21 @@ document.addEventListener('DOMContentLoaded', () => {
           faceImages[cube] = out.toDataURL();
         });
 
-        // --- Randomize the view among 8 corners ---
-        let currentCorner = getRandomCubeCornerView();
-
         // Build the 3D cube
         const cubeDiv = document.getElementById('cube-container');
         cubeDiv.innerHTML = '';
+
+        // Show 'IMPOSSIBLE' if a rotation is applied
+        if (impossible) {
+          const imp = document.createElement('div');
+          imp.textContent = 'IMPOSSIBLE';
+          imp.style.color = 'red';
+          imp.style.fontWeight = 'bold';
+          imp.style.fontSize = '1.2rem';
+          imp.style.textAlign = 'center';
+          imp.style.marginBottom = '8px';
+          cubeDiv.appendChild(imp);
+        }
 
         // Create the 3D cube
         const cube3d = document.createElement('div');
