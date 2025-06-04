@@ -114,6 +114,9 @@ body {
   margin: 0;
   box-sizing: border-box;
   transition: transform 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .problem:hover, .solving:hover {
@@ -450,12 +453,34 @@ body {
 #cube-container {
   width: 100%;
   height: 100%;
-  min-height: 120px;
+  min-height: 200px;
   min-width: 120px;
   display: flex;
   align-items: center;
   justify-content: center;
   margin: 0;
+}
+
+/* Center the cube in its container */
+.cube {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+/* Make all cube-related containers better centered */
+#cube-container > div {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+/* Ensure individual cubes are centered in their wrappers */
+.cube-3d, .cube-3d-alt {
+  margin: 0 auto;
 }
 
 @keyframes float {
