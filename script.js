@@ -276,20 +276,23 @@ document.addEventListener('DOMContentLoaded', () => {
       controlPanel.appendChild(incorrectBtn);
 
       // --- Score logic ---
-      let score = parseInt(localStorage.getItem('cubeScore') || '0', 10);
+      // Move score variable and updateScoreDisplay to top-level scope so it persists
+      if (typeof window.cubeScore === 'undefined') {
+        window.cubeScore = parseInt(localStorage.getItem('cubeScore') || '0', 10);
+      }
       const scoreCircle = document.getElementById('score-circle');
       function updateScoreDisplay() {
-        scoreCircle.textContent = score;
+        scoreCircle.textContent = window.cubeScore;
       }
       updateScoreDisplay();
       function resetScore() {
-        score = 0;
-        localStorage.setItem('cubeScore', score);
+        window.cubeScore = 0;
+        localStorage.setItem('cubeScore', window.cubeScore);
         updateScoreDisplay();
       }
       function addPoint() {
-        score += 1;
-        localStorage.setItem('cubeScore', score);
+        window.cubeScore += 1;
+        localStorage.setItem('cubeScore', window.cubeScore);
         updateScoreDisplay();
       }
       // Button logic
@@ -299,8 +302,8 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
           addPoint();
         }
-        // Optionally, generate a new net after answer
-        newNetBtn.click();
+        // Always go to next problem
+        setTimeout(() => newNetBtn.click(), 0);
       };
       incorrectBtn.onclick = () => {
         if (impossible) {
@@ -308,8 +311,8 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
           resetScore();
         }
-        // Optionally, generate a new net after answer
-        newNetBtn.click();
+        // Always go to next problem
+        setTimeout(() => newNetBtn.click(), 0);
       };
 
       // Make sure the parent is relative for absolute centering
@@ -545,15 +548,15 @@ document.addEventListener('DOMContentLoaded', () => {
         cubeDiv.appendChild(cube3d);
 
         // Handler to randomize the view
-        randomBtn.onclick = () => {
-          currentCorner = getRandomCubeCornerView();
-          cube3d.style.transform = `rotateX(${currentCorner.rotation.x}deg) rotateY(${currentCorner.rotation.y}deg)`;
-          // Update face visibility
-          cube3d.childNodes.forEach(face => {
-            const faceName = Array.from(face.classList).find(cls => ['front','back','left','right','top','bottom'].includes(cls));
-            face.style.opacity = currentCorner.faces.includes(faceName) ? '1' : '0';
-          });
-        };
+        // randomBtn.onclick = () => {
+        //   currentCorner = getRandomCubeCornerView();
+        //   cube3d.style.transform = `rotateX(${currentCorner.rotation.x}deg) rotateY(${currentCorner.rotation.y}deg)`;
+        //   // Update face visibility
+        //   cube3d.childNodes.forEach(face => {
+        //     const faceName = Array.from(face.classList).find(cls => ['front','back','left','right','top','bottom'].includes(cls));
+        //     face.style.opacity = currentCorner.faces.includes(faceName) ? '1' : '0';
+        //   });
+        // };
       }
 
       // Helper to get a random corner view
