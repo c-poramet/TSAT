@@ -297,6 +297,40 @@ body {
   flex-shrink: 0;
 }
 
+.correct-btn {
+  background-color: #2ecc40;
+  color: #fff;
+  border: none;
+  padding: 0.8rem 2rem;
+  border-radius: 6px;
+  font-family: 'Kanit', sans-serif;
+  font-weight: 500;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  margin-right: 1rem;
+}
+.correct-btn:hover {
+  background-color: #27ae38;
+}
+
+.incorrect-btn {
+  background-color: #ff4136;
+  color: #fff;
+  border: none;
+  padding: 0.8rem 2rem;
+  border-radius: 6px;
+  font-family: 'Kanit', sans-serif;
+  font-weight: 500;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  margin-left: 1rem;
+}
+.incorrect-btn:hover {
+  background-color: #c9302c;
+}
+
 /* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
