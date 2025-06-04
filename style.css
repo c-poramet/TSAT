@@ -361,3 +361,56 @@ body {
     max-height: 48px;
   }
 }
+
+.cube-3d {
+  width: 120px;
+  height: 120px;
+  position: relative;
+  transform-style: preserve-3d;
+  transform: rotateX(30deg) rotateY(-30deg) translateZ(0);
+  margin: 48px auto 0 auto;
+  perspective: 600px;
+}
+
+.cube-face-3d {
+  position: absolute;
+  width: 120px;
+  height: 120px;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  box-shadow: 0 2px 8px #0008;
+  border: 2px solid #333;
+  border-radius: 8px;
+}
+
+.cube-face-3d.front {
+  transform: rotateY(0deg) translateZ(60px);
+  z-index: 3;
+}
+
+.cube-face-3d.right {
+  transform: rotateY(90deg) translateZ(60px);
+  z-index: 2;
+}
+
+.cube-face-3d.top {
+  transform: rotateX(90deg) translateZ(60px);
+  z-index: 1;
+}
+
+/* Hide the other faces for now */
+.cube-face-3d.back,
+.cube-face-3d.left,
+.cube-face-3d.bottom {
+  display: none;
+}
+
+#cube-container {
+  width: 120px;
+  height: 120px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
