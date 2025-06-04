@@ -65,6 +65,50 @@ document.addEventListener('DOMContentLoaded', () => {
     ]
   };
 
+  // Define all 8 possible corner views for the cube (make sure this is at top-level scope)
+  const cubeCornerViews = [
+    {
+      name: 'Top-Front-Right',
+      rotation: { x: -35.264, y: -45 },
+      faces: ['top', 'front', 'right']
+    },
+    {
+      name: 'Top-Front-Left',
+      rotation: { x: -35.264, y: 45 },
+      faces: ['top', 'front', 'left']
+    },
+    {
+      name: 'Top-Back-Right',
+      rotation: { x: -35.264, y: -135 },
+      faces: ['top', 'back', 'right']
+    },
+    {
+      name: 'Top-Back-Left',
+      rotation: { x: -35.264, y: 135 },
+      faces: ['top', 'back', 'left']
+    },
+    {
+      name: 'Bottom-Front-Right',
+      rotation: { x: 35.264, y: -45 },
+      faces: ['bottom', 'front', 'right']
+    },
+    {
+      name: 'Bottom-Front-Left',
+      rotation: { x: 35.264, y: 45 },
+      faces: ['bottom', 'front', 'left']
+    },
+    {
+      name: 'Bottom-Back-Right',
+      rotation: { x: 35.264, y: -135 },
+      faces: ['bottom', 'back', 'right']
+    },
+    {
+      name: 'Bottom-Back-Left',
+      rotation: { x: 35.264, y: 135 },
+      faces: ['bottom', 'back', 'left']
+    }
+  ];
+
   // Main generator class for cube nets
   class CubeNetGenerator {
     constructor(config) {
@@ -222,66 +266,104 @@ document.addEventListener('DOMContentLoaded', () => {
       container.style.position = 'relative';
       container.appendChild(netContainer);
       // --- 3D Cube Rendering ---
-      // Mapping for Type 1 net layout (expandable for others)
-      const cubeFaceMap_Type1 = [
-        // netFaceIndex, cubeFace, rotation (deg)
-        { net: 0, cube: 'top', rotation: 0 },
-        { net: 1, cube: 'front', rotation: 0 },
-        { net: 2, cube: 'bottom', rotation: 0 },
-        { net: 3, cube: 'right', rotation: 180 },
-        { net: 4, cube: 'back', rotation: 180 },
-        { net: 5, cube: 'left', rotation: 180 },
-      ];
-
-      // Define all 8 possible corner views for the cube
-      const cubeCornerViews = [
-        {
-          name: 'Top-Front-Right',
-          rotation: { x: -35.264, y: -45 },
-          faces: ['top', 'front', 'right']
-        },
-        {
-          name: 'Top-Front-Left',
-          rotation: { x: -35.264, y: 45 },
-          faces: ['top', 'front', 'left']
-        },
-        {
-          name: 'Top-Back-Right',
-          rotation: { x: -35.264, y: -135 },
-          faces: ['top', 'back', 'right']
-        },
-        {
-          name: 'Top-Back-Left',
-          rotation: { x: -35.264, y: 135 },
-          faces: ['top', 'back', 'left']
-        },
-        {
-          name: 'Bottom-Front-Right',
-          rotation: { x: 35.264, y: -45 },
-          faces: ['bottom', 'front', 'right']
-        },
-        {
-          name: 'Bottom-Front-Left',
-          rotation: { x: 35.264, y: 45 },
-          faces: ['bottom', 'front', 'left']
-        },
-        {
-          name: 'Bottom-Back-Right',
-          rotation: { x: 35.264, y: -135 },
-          faces: ['bottom', 'back', 'right']
-        },
-        {
-          name: 'Bottom-Back-Left',
-          rotation: { x: 35.264, y: 135 },
-          faces: ['bottom', 'back', 'left']
-        }
-      ];
+      // Mapping for all net layouts: face name, net index, and rotation
+      const cubeFaceMaps = {
+        'Type 1': [
+          { net: 0, cube: 'top', rotation: 0 },
+          { net: 1, cube: 'front', rotation: 0 },
+          { net: 2, cube: 'bottom', rotation: 0 },
+          { net: 3, cube: 'right', rotation: 180 },
+          { net: 4, cube: 'back', rotation: 180 },
+          { net: 5, cube: 'left', rotation: 180 },
+        ],
+        'Type 2': [
+          { net: 0, cube: 'left', rotation: 180 },
+          { net: 1, cube: 'back', rotation: 180 },
+          { net: 2, cube: 'top', rotation: 0 },
+          { net: 3, cube: 'right', rotation: 90 },
+          { net: 4, cube: 'front', rotation: 0 },
+          { net: 5, cube: 'bottom', rotation: 0 },
+        ],
+        'Type 3': [
+          { net: 0, cube: 'left', rotation: 180 },
+          { net: 1, cube: 'back', rotation: 180 },
+          { net: 2, cube: 'top', rotation: 0 },
+          { net: 3, cube: 'front', rotation: 0 },
+          { net: 4, cube: 'right', rotation: 0 },
+          { net: 5, cube: 'bottom', rotation: 0 },
+        ],
+        'Type 4': [
+          { net: 0, cube: 'left', rotation: 180 },
+          { net: 1, cube: 'back', rotation: 180 },
+          { net: 2, cube: 'top', rotation: 0 },
+          { net: 3, cube: 'front', rotation: 0 },
+          { net: 4, cube: 'bottom', rotation: 0 },
+          { net: 5, cube: 'right', rotation: 270 },
+        ],
+        'Type 5': [
+          { net: 0, cube: 'back', rotation: 270 },
+          { net: 1, cube: 'left', rotation: 270 },
+          { net: 2, cube: 'top', rotation: 0 },
+          { net: 3, cube: 'right', rotation: 90 },
+          { net: 4, cube: 'front', rotation: 0 },
+          { net: 5, cube: 'bottom', rotation: 0 },
+        ],
+        'Type 6': [
+          { net: 0, cube: 'back', rotation: 270 },
+          { net: 1, cube: 'left', rotation: 270 },
+          { net: 2, cube: 'top', rotation: 0 },
+          { net: 3, cube: 'front', rotation: 0 },
+          { net: 4, cube: 'right', rotation: 0 },
+          { net: 5, cube: 'bottom', rotation: 0 },
+        ],
+        'Type 7': [
+          { net: 0, cube: 'back', rotation: 270 },
+          { net: 1, cube: 'left', rotation: 270 },
+          { net: 2, cube: 'top', rotation: 0 },
+          { net: 3, cube: 'front', rotation: 0 },
+          { net: 4, cube: 'bottom', rotation: 0 },
+          { net: 5, cube: 'right', rotation: 270 },
+        ],
+        'Type 8': [
+          { net: 0, cube: 'back', rotation: 270 },
+          { net: 1, cube: 'left', rotation: 270 },
+          { net: 2, cube: 'top', rotation: 0 },
+          { net: 3, cube: 'front', rotation: 0 },
+          { net: 4, cube: 'right', rotation: 0 },
+          { net: 5, cube: 'bottom', rotation: 90 },
+        ],
+        'Type 9': [
+          { net: 0, cube: 'back', rotation: 180 },
+          { net: 1, cube: 'left', rotation: 270 },
+          { net: 2, cube: 'top', rotation: 0 },
+          { net: 3, cube: 'right', rotation: 90 },
+          { net: 4, cube: 'front', rotation: 0 },
+          { net: 5, cube: 'bottom', rotation: 0 },
+        ],
+        'Type 10': [
+          { net: 0, cube: 'back', rotation: 180 },
+          { net: 1, cube: 'left', rotation: 270 },
+          { net: 2, cube: 'top', rotation: 0 },
+          { net: 3, cube: 'front', rotation: 0 },
+          { net: 4, cube: 'right', rotation: 0 },
+          { net: 5, cube: 'bottom', rotation: 0 },
+        ],
+        'Type 11': [
+          { net: 0, cube: 'bottom', rotation: 0 },
+          { net: 1, cube: 'back', rotation: 180 },
+          { net: 2, cube: 'top', rotation: 0 },
+          { net: 3, cube: 'right', rotation: 90 },
+          { net: 4, cube: 'front', rotation: 90 },
+          { net: 5, cube: 'left', rotation: 90 },
+        ],
+      };
 
       function renderCube3D(netLayout, facePatterns) {
-        // Only support Type 1 for now
-        if (netLayout.name !== 'Type 1') {
+        // Use the correct face map for the current net layout
+        const faceMap = cubeFaceMaps[netLayout.name];
+        if (!faceMap) {
           const cubeDiv = document.getElementById('cube-container');
-          cubeDiv.innerHTML = '<div style="color:#888;text-align:center;padding:2rem;">3D folding only supported for Type 1 net for now.</div>';
+          cubeDiv.innerHTML = '<div style="color:#888;text-align:center;padding:2rem;">3D folding not supported for this net layout.</div>';
           return;
         }
         // Prepare textures for each face
@@ -312,10 +394,9 @@ document.addEventListener('DOMContentLoaded', () => {
           }
           faceCanvases.push(canvas);
         }
-        // Map net faces to cube faces
+        // Map net faces to cube faces for this layout
         const faceImages = {};
-        cubeFaceMap_Type1.forEach(({ net, cube, rotation }) => {
-          // Create a rotated canvas for each face
+        faceMap.forEach(({ net, cube, rotation }) => {
           const src = faceCanvases[net];
           const out = document.createElement('canvas');
           out.width = 120;
