@@ -301,22 +301,55 @@ document.addEventListener('DOMContentLoaded', () => {
       // Button logic
       correctBtn.onclick = () => {
         if (window.isImpossible) {
-          resetScore();
+          // Incorrect answer: highlight rotated face and disable buttons
+          highlightRotatedFaceAndPause();
         } else {
           addPoint();
+          // Always go to next problem
+          setTimeout(() => newNetBtn.click(), 0);
         }
-        // Always go to next problem
-        setTimeout(() => newNetBtn.click(), 0);
       };
       incorrectBtn.onclick = () => {
         if (window.isImpossible) {
           addPoint();
+          // Always go to next problem
+          setTimeout(() => newNetBtn.click(), 0);
         } else {
-          resetScore();
+          // Incorrect answer: highlight rotated face and disable buttons
+          highlightRotatedFaceAndPause();
         }
-        // Always go to next problem
-        setTimeout(() => newNetBtn.click(), 0);
       };
+
+      // Helper to highlight the rotated face and pause UI
+      function highlightRotatedFaceAndPause() {
+        // Disable and gray out buttons
+        correctBtn.disabled = true;
+        incorrectBtn.disabled = true;
+        correctBtn.style.opacity = '0.5';
+        incorrectBtn.style.opacity = '0.5';
+        // Only highlight if a face was rotated
+        if (window.isImpossible && typeof window.rotatedNetIdx === 'number' && window.rotatedNetIdx >= 0) {
+          // Find all net face elements
+          const netFaces = document.querySelectorAll('.net-container .cube-face');
+          // The order of .cube-face matches the order of this.currentLayout.faces
+          const highlightIdx = window.rotatedNetIdx;
+          // Defensive: check if exists
+          if (netFaces[highlightIdx]) {
+            netFaces[highlightIdx].classList.add('glow-red');
+          }
+        }
+      }
+      // When NEW NET is pressed, re-enable buttons and remove highlight
+      newNetBtn.addEventListener('click', () => {
+        correctBtn.disabled = false;
+        incorrectBtn.disabled = false;
+        correctBtn.style.opacity = '1';
+        incorrectBtn.style.opacity = '1';
+        // Remove highlight from all faces
+        document.querySelectorAll('.net-container .cube-face.glow-red').forEach(el => {
+          el.classList.remove('glow-red');
+        });
+      });
 
       // Make sure the parent is relative for absolute centering
       container.style.position = 'relative';

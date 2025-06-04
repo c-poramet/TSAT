@@ -571,3 +571,16 @@ body {
     border-width: 2px;
   }
 }
+
+.glow-red {
+  box-shadow: 0 0 0 4px #ff3333, 0 0 16px 8px #ff3333;
+  border: 2px solid #ff3333 !important;
+  z-index: 10;
+  animation: glowRedPulse 0.7s cubic-bezier(.4,0,.2,1) 2;
+}
+
+@keyframes glowRedPulse {
+  0% { box-shadow: 0 0 0 4px #ff3333, 0 0 0 0 #ff3333; }
+  50% { box-shadow: 0 0 0 4px #ff3333, 0 0 16px 8px #ff3333; }
+  100% { box-shadow: 0 0 0 4px #ff3333, 0 0 0 0 #ff3333; }
+}
