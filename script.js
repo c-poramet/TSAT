@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
     netLayouts: [
       // Type 1
       { name: 'Type 1', faces: [
-        {face:0,x:0,y:0}, {face:1,x:1,y:0}, {face:2,x:2,y:0}, {face:3,x:1,y:1}, {face:4,x:1,y:2}, {face:5,x:1,y:3}
+        {face:5,x:0,y:0}, {face:4,x:1,y:0}, {face:3,x:2,y:0}, {face:0,x:1,y:1}, {face:1,x:1,y:2}, {face:2,x:1,y:3}
       ]},
       // Type 2
       { name: 'Type 2', faces: [
@@ -227,10 +227,10 @@ document.addEventListener('DOMContentLoaded', () => {
         // netFaceIndex, cubeFace, rotation (deg)
         { net: 0, cube: 'top', rotation: 0 },
         { net: 1, cube: 'front', rotation: 0 },
-        { net: 2, cube: 'bottom', rotation: 180 },
-        { net: 3, cube: 'right', rotation: 270 },
+        { net: 2, cube: 'bottom', rotation: 0 },
+        { net: 3, cube: 'right', rotation: 180 },
         { net: 4, cube: 'back', rotation: 180 },
-        { net: 5, cube: 'left', rotation: 90 },
+        { net: 5, cube: 'left', rotation: 180 },
       ];
 
       function renderCube3D(netLayout, facePatterns) {
@@ -289,12 +289,11 @@ document.addEventListener('DOMContentLoaded', () => {
         cubeDiv.innerHTML = '';
         const cube3d = document.createElement('div');
         cube3d.className = 'cube-3d';
-        // Only show front, right, top, and bottom faces
+        // Only show top, front, and right faces (looking down perspective)
         const faces = [
           { class: 'cube-face-3d front', img: faceImages.front },
           { class: 'cube-face-3d right', img: faceImages.right },
           { class: 'cube-face-3d top', img: faceImages.top },
-          { class: 'cube-face-3d bottom', img: faceImages.bottom },
         ];
         faces.forEach(f => {
           const face = document.createElement('div');

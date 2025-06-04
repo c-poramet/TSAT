@@ -88,7 +88,25 @@
     <button id="export">Export</button>
   </div>
   <div id="grid" class="grid"></div>
+  <div class="face-controls" style="margin-bottom:1rem;display:flex;gap:1rem;align-items:center;">
+    <label>Face:
+      <select id="face-type">
+        <option value="front">Front</option>
+        <option value="back">Back</option>
+        <option value="left">Left</option>
+        <option value="right">Right</option>
+        <option value="top">Top</option>
+        <option value="bottom">Bottom</option>
+      </select>
+    </label>
+    <label>Rotation:
+      <input type="number" id="face-rotation" min="0" max="359" value="0" step="90" style="width:60px;">
+      <span>deg</span>
+    </label>
+    <button id="assign-face">Assign to Selected</button>
+  </div>
   <textarea id="output" readonly placeholder="Exported coordinates will appear here..."></textarea>
+  <button id="copy-btn" style="margin-top:0.5rem;">Copy</button>
   <script>
     const gridDiv = document.getElementById('grid');
     const widthInput = document.getElementById('width');
@@ -96,21 +114,30 @@
     const output = document.getElementById('output');
     const resetBtn = document.getElementById('reset');
     const exportBtn = document.getElementById('export');
+    const faceTypeSelect = document.getElementById('face-type');
+    const faceRotationInput = document.getElementById('face-rotation');
+    const assignFaceBtn = document.getElementById('assign-face');
+    const copyBtn = document.getElementById('copy-btn');
     let width = parseInt(widthInput.value);
     let height = parseInt(heightInput.value);
     let selected = new Set();
+    // Map: cellId -> {face, rotation}
+    let faceAssignments = {};
+    let lastSelected = null;
 
     function cellId(x, y) {
       return `${x},${y}`;
     }
 
     function exportCoords() {
-      const coords = Array.from(selected)
-        .map(s => s.split(',').map(Number))
-        .sort((a, b) => a[1] - b[1] || a[0] - b[0])
-        .map(([x, y]) => `(${x},${y})`)
-        .join('\n');
-      output.value = coords;
+      // Export as JS array for script.js: [ {face: 'front', x: 1, y: 2, rotation: 90}, ... ]
+      const arr = Array.from(selected)
+        .map(s => {
+          const [x, y] = s.split(',').map(Number);
+          const assign = faceAssignments[s] || {face: 'front', rotation: 0};
+          return `{face: '${assign.face}', x: ${x}, y: ${y}, rotation: ${assign.rotation}}`;
+        });
+      output.value = '[\n  ' + arr.join(',\n  ') + '\n]';
     }
 
     function renderGrid() {
@@ -124,11 +151,15 @@
           cell.textContent = '';
           cell.dataset.x = x;
           cell.dataset.y = y;
-          if (selected.has(cellId(x, y))) {
+          const key = cellId(x, y);
+          if (selected.has(key)) {
             cell.classList.add('selected');
+            // Show face/rotation assignment as tooltip
+            if (faceAssignments[key]) {
+              cell.title = `${faceAssignments[key].face}, ${faceAssignments[key].rotation}°`;
+            }
           }
           cell.addEventListener('click', () => {
-            const key = cellId(x, y);
             if (selected.has(key)) {
               selected.delete(key);
               cell.classList.remove('selected');
@@ -136,7 +167,9 @@
               selected.add(key);
               cell.classList.add('selected');
             }
+            lastSelected = key;
             exportCoords(); // Auto-export on click
+            renderGrid(); // Refresh tooltips
           });
           gridDiv.appendChild(cell);
         }
@@ -155,10 +188,45 @@
     });
     resetBtn.addEventListener('click', () => {
       selected.clear();
+      faceAssignments = {};
       renderGrid();
       output.value = '';
     });
     exportBtn.addEventListener('click', exportCoords);
+    copyBtn.addEventListener('click', () => {
+      output.select();
+      document.execCommand('copy');
+    });
+    assignFaceBtn.addEventListener('click', () => {
+      const face = faceTypeSelect.value;
+      const rotation = parseInt(faceRotationInput.value) || 0;
+      selected.forEach(s => {
+        faceAssignments[s] = { face, rotation };
+      });
+      exportCoords();
+      renderGrid();
+    });
+    faceRotationInput.step = 90;
+    faceRotationInput.addEventListener('input', () => {
+      // Only update last selected cell
+      if (lastSelected) {
+        const face = faceTypeSelect.value;
+        const rotation = parseInt(faceRotationInput.value) || 0;
+        faceAssignments[lastSelected] = { face, rotation };
+        exportCoords();
+        renderGrid();
+      }
+    });
+    faceTypeSelect.addEventListener('change', () => {
+      // Only update last selected cell
+      if (lastSelected) {
+        const face = faceTypeSelect.value;
+        const rotation = parseInt(faceRotationInput.value) || 0;
+        faceAssignments[lastSelected] = { face, rotation };
+        exportCoords();
+        renderGrid();
+      }
+    });
 
     renderGrid();
   </script>
