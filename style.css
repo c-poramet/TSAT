@@ -410,10 +410,29 @@ body {
   display: block; /* Show bottom face */
 }
 
-/* Hide the other faces for now */
-.cube-face-3d.back,
+/* Show all faces for debugging */
+.cube-face-3d.back {
+  transform: rotateY(180deg) translateZ(60px);
+  z-index: 1;
+  display: block;
+}
+
 .cube-face-3d.left {
-  display: none;
+  transform: rotateY(-90deg) translateZ(60px);
+  z-index: 1;
+  display: block;
+}
+
+/* Alternative view cube */
+.cube-3d-alt {
+  width: 120px;
+  height: 120px;
+  position: relative;
+  transform-style: preserve-3d;
+  transform: rotateX(25deg) rotateY(140deg) translateZ(0);
+  margin: 0;
+  perspective: 800px;
+  animation: none;
 }
 
 #cube-container {

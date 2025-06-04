@@ -284,24 +284,58 @@ document.addEventListener('DOMContentLoaded', () => {
           ctx.restore();
           faceImages[cube] = out.toDataURL();
         });
-        // Build the 3D cube
+        // Build the 3D cube - View from above
         const cubeDiv = document.getElementById('cube-container');
         cubeDiv.innerHTML = '';
+        
+        // Create a container for both cube views
+        const viewsContainer = document.createElement('div');
+        viewsContainer.style.display = 'flex';
+        viewsContainer.style.justifyContent = 'space-around';
+        viewsContainer.style.width = '100%';
+        viewsContainer.style.alignItems = 'center';
+        
+        // First cube - view from above (top, front, right)
         const cube3d = document.createElement('div');
         cube3d.className = 'cube-3d';
+        
         // Show top, front, and right faces (looking down perspective)
-        const faces = [
+        const topViewFaces = [
           { class: 'cube-face-3d front', img: faceImages.front },
           { class: 'cube-face-3d right', img: faceImages.right },
           { class: 'cube-face-3d top', img: faceImages.top },
         ];
-        faces.forEach(f => {
+        
+        topViewFaces.forEach(f => {
           const face = document.createElement('div');
           face.className = f.class;
           face.style.backgroundImage = `url('${f.img}')`;
           cube3d.appendChild(face);
         });
-        cubeDiv.appendChild(cube3d);
+        
+        // Second cube - view from below (bottom, back, left)
+        const cube3dAlt = document.createElement('div');
+        cube3dAlt.className = 'cube-3d-alt';
+        cube3dAlt.style.marginLeft = '20px';
+        
+        // Show bottom, back, and left faces
+        const bottomViewFaces = [
+          { class: 'cube-face-3d back', img: faceImages.back },
+          { class: 'cube-face-3d left', img: faceImages.left },
+          { class: 'cube-face-3d bottom', img: faceImages.bottom },
+        ];
+        
+        bottomViewFaces.forEach(f => {
+          const face = document.createElement('div');
+          face.className = f.class;
+          face.style.backgroundImage = `url('${f.img}')`;
+          cube3dAlt.appendChild(face);
+        });
+        
+        // Add both views to the container
+        viewsContainer.appendChild(cube3d);
+        viewsContainer.appendChild(cube3dAlt);
+        cubeDiv.appendChild(viewsContainer);
       }
       // After rendering the net, render the 3D cube
       renderCube3D(this.currentLayout, this.facePatterns);
