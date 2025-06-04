@@ -312,6 +312,28 @@ body {
   background: #505050;
 }
 
+/* Make all cube faces visually even and balanced */
+.cube-face-3d {
+  border-radius: 8px;
+  border-width: 3px !important;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.35);
+  margin: 0;
+  padding: 0;
+}
+
+/* Force consistent dimensions and positioning for all cube faces */
+.cube-face-3d {
+  width: 120px !important;
+  height: 120px !important;
+  box-sizing: border-box !important;
+  background-size: 100% 100% !important;
+}
+
+/* Perfect cubic alignment */
+.cube-3d {
+  transform: rotateX(-30deg) rotateY(-30deg) translateZ(0);
+}
+
 /* Media queries for responsive net layout */
 @media (max-width: 900px) {
   .container {
@@ -367,9 +389,9 @@ body {
   height: 120px;
   position: relative;
   transform-style: preserve-3d;
-  transform: rotateX(-25deg) rotateY(-40deg) translateZ(0);
+  transform: rotateX(-30deg) rotateY(-45deg);
   margin: 0;
-  perspective: 800px;
+  perspective: 1200px;
   animation: none;
 }
 
@@ -381,8 +403,8 @@ body {
   background-position: center;
   background-repeat: no-repeat;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
-  border: 2px solid #333;
-  border-radius: 6px;
+  border: 3px solid #333;
+  border-radius: 8px;
   backface-visibility: hidden;
 }
 
@@ -396,6 +418,8 @@ body {
 .cube-face-3d.right {
   transform: rotateY(90deg) translateZ(60px);
   z-index: 2;
+  display: block;
+  border-color: #444 !important;
 }
 
 .cube-face-3d.top {
@@ -407,13 +431,20 @@ body {
 .cube-face-3d.bottom {
   transform: rotateX(-90deg) translateZ(60px);
   z-index: 0;
-  display: block; /* Show bottom face */
+  display: block;
 }
 
-/* Hide the other faces for now */
-.cube-face-3d.back,
+/* Make sure all faces are displayed and aligned properly */
+.cube-face-3d.back {
+  transform: rotateY(180deg) translateZ(60px);
+  z-index: 1;
+  display: block;
+}
+
 .cube-face-3d.left {
-  display: none;
+  transform: rotateY(-90deg) translateZ(60px);
+  z-index: 2;
+  display: block;
 }
 
 #cube-container {
