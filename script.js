@@ -257,7 +257,6 @@ document.addEventListener('DOMContentLoaded', () => {
       const correctBtn = document.createElement('button');
       correctBtn.className = 'correct-btn';
       correctBtn.textContent = 'CORRECT';
-      // (Add your event handler here if needed)
       // Create New Net button
       const newNetBtn = document.createElement('button');
       newNetBtn.className = 'new-net-btn';
@@ -271,11 +270,48 @@ document.addEventListener('DOMContentLoaded', () => {
       const incorrectBtn = document.createElement('button');
       incorrectBtn.className = 'incorrect-btn';
       incorrectBtn.textContent = 'INCORRECT';
-      // (Add your event handler here if needed)
       // Add all three buttons to the control panel
       controlPanel.appendChild(correctBtn);
       controlPanel.appendChild(newNetBtn);
       controlPanel.appendChild(incorrectBtn);
+
+      // --- Score logic ---
+      let score = parseInt(localStorage.getItem('cubeScore') || '0', 10);
+      const scoreCircle = document.getElementById('score-circle');
+      function updateScoreDisplay() {
+        scoreCircle.textContent = score;
+      }
+      updateScoreDisplay();
+      function resetScore() {
+        score = 0;
+        localStorage.setItem('cubeScore', score);
+        updateScoreDisplay();
+      }
+      function addPoint() {
+        score += 1;
+        localStorage.setItem('cubeScore', score);
+        updateScoreDisplay();
+      }
+      // Button logic
+      correctBtn.onclick = () => {
+        if (impossible) {
+          resetScore();
+        } else {
+          addPoint();
+        }
+        // Optionally, generate a new net after answer
+        newNetBtn.click();
+      };
+      incorrectBtn.onclick = () => {
+        if (impossible) {
+          addPoint();
+        } else {
+          resetScore();
+        }
+        // Optionally, generate a new net after answer
+        newNetBtn.click();
+      };
+
       // Make sure the parent is relative for absolute centering
       container.style.position = 'relative';
       container.appendChild(netContainer);
