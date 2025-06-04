@@ -269,7 +269,7 @@ body {
   font-size: 1.2rem;
   cursor: pointer;
   transition: background-color 0.2s ease;
-  margin-top: 2rem;
+  /* margin-top: 2rem; */
 }
 
 .new-net-btn:hover {
@@ -281,15 +281,16 @@ body {
   width: 100vw;
   max-width: 1200px;
   margin: 0 auto 0 auto;
+  margin-bottom: 1rem;
   display: flex;
   justify-content: center;
   align-items: center;
   gap: 1.5rem;
   background: #232323;
   border-radius: 8px;
-  min-height: 80px;
+  min-height: 40px; /* Reduced from 80px */
   box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-  padding: 1.5rem 0;
+  padding: 0.5rem 0; /* Reduced padding */
   flex-shrink: 0;
 }
 
