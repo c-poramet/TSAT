@@ -194,6 +194,7 @@ document.addEventListener('DOMContentLoaded', () => {
       this.currentLayout.faces.forEach(facePos => {
         const faceElement = document.createElement('div');
         faceElement.className = 'cube-face';
+        faceElement.dataset.faceIndex = facePos.face; // Store the face index as data attribute
         faceElement.style.left = `${(facePos.x - minX) * cellSize}px`;
         faceElement.style.top = `${(facePos.y - minY) * cellSize}px`;
         faceElement.style.position = 'absolute';
@@ -301,22 +302,76 @@ document.addEventListener('DOMContentLoaded', () => {
       // Button logic
       correctBtn.onclick = () => {
         if (window.isImpossible) {
-          resetScore();
+          // Incorrect answer: highlight rotated face and disable buttons
+          highlightRotatedFaceAndPause();
         } else {
           addPoint();
+          // Always go to next problem
+          setTimeout(() => newNetBtn.click(), 0);
         }
-        // Always go to next problem
-        setTimeout(() => newNetBtn.click(), 0);
       };
       incorrectBtn.onclick = () => {
         if (window.isImpossible) {
           addPoint();
+          // Always go to next problem
+          setTimeout(() => newNetBtn.click(), 0);
         } else {
-          resetScore();
+          // Incorrect answer: highlight rotated face and disable buttons
+          highlightRotatedFaceAndPause();
         }
-        // Always go to next problem
-        setTimeout(() => newNetBtn.click(), 0);
       };
+
+      // Helper to highlight the rotated face and pause UI
+      const currentNetLayout = this.currentLayout; // Capture reference for highlighting function
+      function highlightRotatedFaceAndPause() {
+        // Reset score when incorrect
+        resetScore();
+        
+        // Disable and gray out buttons
+        correctBtn.disabled = true;
+        incorrectBtn.disabled = true;
+        correctBtn.style.opacity = '0.5';
+        incorrectBtn.style.opacity = '0.5';
+        
+        // Only highlight if a face was rotated (impossible case)
+        if (window.isImpossible && typeof window.rotatedNetIdx === 'number' && window.rotatedNetIdx >= 0) {
+          // Find the face element that has the data-face-index attribute matching rotatedNetIdx
+          const highlightFace = document.querySelector(`.cube-face[data-face-index="${window.rotatedNetIdx}"]`);
+          
+          if (highlightFace) {
+            highlightFace.classList.add('glow-red');
+          }
+          
+          // Also highlight the corresponding 3D cube face
+          // Find which cube face corresponds to the rotated net face
+          const faceMap = cubeFaceMaps[currentNetLayout.name];
+          if (faceMap) {
+            const rotatedNetMapping = faceMap.find(mapping => mapping.net === window.rotatedNetIdx);
+            if (rotatedNetMapping) {
+              const cubeFaceName = rotatedNetMapping.cube;
+              const highlight3DFace = document.querySelector(`.cube-face-3d.${cubeFaceName}`);
+              
+              if (highlight3DFace) {
+                highlight3DFace.classList.add('glow-red');
+              }
+            }
+          }
+        }
+      }
+      // When NEW NET is pressed, re-enable buttons and remove highlight
+      newNetBtn.addEventListener('click', () => {
+        correctBtn.disabled = false;
+        incorrectBtn.disabled = false;
+        correctBtn.style.opacity = '1';
+        incorrectBtn.style.opacity = '1';
+        // Remove highlight from all faces (both net and 3D cube)
+        document.querySelectorAll('.net-container .cube-face.glow-red').forEach(el => {
+          el.classList.remove('glow-red');
+        });
+        document.querySelectorAll('.cube-face-3d.glow-red').forEach(el => {
+          el.classList.remove('glow-red');
+        });
+      });
 
       // Make sure the parent is relative for absolute centering
       container.style.position = 'relative';
@@ -464,6 +519,7 @@ document.addEventListener('DOMContentLoaded', () => {
           if (!skip) {
             rotatedDeg = allowedRotations[Math.floor(Math.random() * allowedRotations.length)];
             window.isImpossible = true;
+            window.rotatedNetIdx = rotatedNetIdx; // Store for later
             rotationApplied = true;
           }
         }
